@@ -22,7 +22,7 @@ let lastTransformParams = null;
 
 let sliderStartWidth, sliderStartHeight;
 let sliderMinSize, sliderMaxSize;
-let sliderNoiseSize;
+let sliderNoiseDensity;
 let sliderColorMode;
 
 let textColors = ["#000000"];
@@ -145,8 +145,8 @@ function setup() {
     .parent(container)
     .style("width", "100%");
 
-  createDiv("Noise Size:").parent(container);
-  sliderNoiseSize = createSlider(0.5, 5, 1, 0.1)
+  createDiv("Noise Density:").parent(container);
+  sliderNoiseDensity = createSlider(0, 1000, 100, 1)
     .parent(container)
     .style("width", "100%");
 
@@ -168,7 +168,7 @@ function setup() {
     .style("border-radius", "4px")
     .style("cursor", "pointer")
     .style("font-size", "14px")
-    .style("margin-top", "5px")
+    .style("margin-top", "10px")
     .mousePressed(togglePause);
 
   resetSimulation();
@@ -399,16 +399,16 @@ function togglePause() {
 
   if (isPaused) {
     pauseButton.html("Продолжить");
-    pauseButton.style("background", "#f44336").style("margin-top", "5px"); // Красный цвет
+    pauseButton.style("background", "#f44336"); // Красный цвет
   } else {
     pauseButton.html("Пауза");
-    pauseButton.style("background", "#4CAF50").style("margin-top", "5px"); // Зеленый цвет
+    pauseButton.style("background", "#4CAF50"); // Зеленый цвет
   }
 }
 
 // Оптимизированная генерация частиц
 function generateNoiseOptimized(transformedPoints, bounds) {
-  let density = 500;
+  let density = sliderNoiseDensity.value(); // Используем значение слайдера
   let activeCount = noisePoints.length;
 
   // Предрасчет для быстрой проверки попадания в полигон
