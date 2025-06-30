@@ -15,17 +15,26 @@ let currentWidth, currentHeight;
 let rotationAngle = 0;
 let targetAngle = 0;
 
+// Кэширование для оптимизации
+let cachedTransformedPoints = [];
+let cachedBounds = null;
+let lastTransformParams = null;
+
 let sliderStartWidth, sliderStartHeight;
 let sliderMinSize, sliderMaxSize;
 let sliderNoiseSize;
+let sliderColorMode;
 
 let textColors = ["#000000"];
 let textColor = "#000000";
 
 let noisePoints = [];
+// Пул для переиспользования объектов частиц
+let particlePool = [];
 
 let lastHitTime = 0;
 const hitCooldown = 1000;
+const MAX_NOISE_POINTS = 1000;
 
 function preload() {
   bgImg = loadImage("assets/u.svg");
@@ -96,6 +105,9 @@ function setup() {
   ];
   currentPoints = shape1.map((p) => ({ x: p.x, y: p.y }));
 
+  // Инициализация пула частиц
+  initParticlePool();
+
   let container = createDiv()
     .style("padding", "10px")
     .style("background", "#eee")
@@ -134,7 +146,27 @@ function setup() {
     .parent(container)
     .style("width", "100%");
 
+  createDiv("Noise Color Mode:").parent(container);
+  sliderColorMode = createSelect().parent(container).style("width", "100%");
+  sliderColorMode.option("Black");
+  sliderColorMode.option("White");
+
   resetSimulation();
+}
+
+// Инициализация пула частиц для переиспользования
+function initParticlePool() {
+  for (let i = 0; i < MAX_NOISE_POINTS; i++) {
+    particlePool.push({
+      x: 0,
+      y: 0,
+      vx: 0,
+      vy: 0,
+      radius: 0,
+      color: null,
+      active: false,
+    });
+  }
 }
 
 function resetSimulation() {
@@ -150,16 +182,26 @@ function resetSimulation() {
   dy = random(1, 2.5) * (random() < 0.5 ? 1 : -1);
 
   textColor = "#000000";
+
+  // Деактивация всех частиц вместо создания нового массива
+  for (let particle of particlePool) {
+    particle.active = false;
+  }
   noisePoints = [];
+
   hitCount = 0;
   progress = 0;
   isMorphing = false;
   lastHitTime = 0;
+
+  // Сброс кэша
+  cachedBounds = null;
+  lastTransformParams = null;
 }
 
 function draw() {
   noStroke();
-  background(200, 200, 200, 20);
+  background(255);
   image(bgImg, 0, 0, width, height);
 
   x += dx;
@@ -168,6 +210,7 @@ function draw() {
   let from = shapes[currentShapeIndex];
   let to = shapes[nextShapeIndex];
 
+  // Морфинг только при необходимости
   if (isMorphing) {
     progress += 0.02;
     if (progress >= 1) {
@@ -175,51 +218,75 @@ function draw() {
       isMorphing = false;
       currentShapeIndex = nextShapeIndex;
       nextShapeIndex = (nextShapeIndex + 1) % shapes.length;
+      // Сброс кэша при смене фигуры
+      lastTransformParams = null;
     }
     for (let i = 0; i < currentPoints.length; i++) {
       currentPoints[i].x = lerp(from[i].x, to[i].x, progress);
       currentPoints[i].y = lerp(from[i].y, to[i].y, progress);
     }
+    // Сброс кэша при морфинге
+    lastTransformParams = null;
   }
 
-  let origBounds = getBoundingBox(currentPoints);
-  let scaleX = currentWidth / origBounds.width;
-  let scaleY = currentHeight / origBounds.height;
+  // Кэширование трансформаций
+  let transformParams = `${x},${y},${currentWidth},${currentHeight},${rotationAngle}`;
+  let transformedPoints, bounds;
 
-  let transformedPoints = currentPoints.map((p) =>
-    transformPoint(
-      p.x - origBounds.minX,
-      p.y - origBounds.minY,
-      x,
-      y,
-      scaleX,
-      scaleY,
-      rotationAngle,
-    ),
-  );
+  if (lastTransformParams !== transformParams) {
+    let origBounds = getBoundingBox(currentPoints);
+    let scaleX = currentWidth / origBounds.width;
+    let scaleY = currentHeight / origBounds.height;
 
-  let bounds = getBoundingBox(transformedPoints);
+    transformedPoints = currentPoints.map((p) =>
+      transformPoint(
+        p.x - origBounds.minX,
+        p.y - origBounds.minY,
+        x,
+        y,
+        scaleX,
+        scaleY,
+        rotationAngle,
+      ),
+    );
 
+    bounds = getBoundingBox(transformedPoints);
+
+    // Кэширование результатов
+    cachedTransformedPoints = transformedPoints;
+    cachedBounds = bounds;
+    lastTransformParams = transformParams;
+  } else {
+    // Использование кэшированных значений
+    transformedPoints = cachedTransformedPoints;
+    bounds = cachedBounds;
+  }
+
+  // Проверка коллизий
   let hit = false;
   if (bounds.minX < 0) {
     dx = abs(dx);
     x += -bounds.minX;
     hit = true;
+    lastTransformParams = null; // Сброс кэша
   }
   if (bounds.maxX > width) {
     dx = -abs(dx);
     x -= bounds.maxX - width;
     hit = true;
+    lastTransformParams = null;
   }
   if (bounds.minY < 0) {
     dy = abs(dy);
     y += -bounds.minY;
     hit = true;
+    lastTransformParams = null;
   }
   if (bounds.maxY > height) {
     dy = -abs(dy);
     y -= bounds.maxY - height;
     hit = true;
+    lastTransformParams = null;
   }
 
   let currentTime = millis();
@@ -229,12 +296,12 @@ function draw() {
     randomizeOneSide();
     targetAngle = random(-45, 45);
     textColor = random(textColors);
-    // Убрали generateNoise отсюда!
-    if (hitCount >= 2) {
+
+    if (hitCount >= 3) {
       isMorphing = true;
       progress = 0;
       hitCount = 0;
-      generateNoise(transformedPoints, bounds);
+      generateNoiseOptimized(transformedPoints, bounds);
     }
   }
 
@@ -242,6 +309,7 @@ function draw() {
   currentHeight = lerp(currentHeight, targetHeight, 0.1);
   rotationAngle = lerp(rotationAngle, targetAngle, 0.1);
 
+  // Отрисовка фигуры
   blendMode(DIFFERENCE);
   noStroke();
   fill("white");
@@ -251,39 +319,93 @@ function draw() {
 
   blendMode(BLEND);
   noStroke();
-  let sz = sliderNoiseSize.value();
+
+  // Оптимизированное обновление частиц
+  updateParticles();
+  renderParticles();
+}
+
+// Оптимизированная генерация частиц
+function generateNoiseOptimized(transformedPoints, bounds) {
+  let density = 500;
+  let activeCount = noisePoints.length;
+
+  // Предрасчет для быстрой проверки попадания в полигон
+  let minX = bounds.minX;
+  let maxX = bounds.maxX;
+  let minY = bounds.minY;
+  let maxY = bounds.maxY;
+
+  for (let i = 0; i < density && activeCount < MAX_NOISE_POINTS; i++) {
+    // Более эффективная генерация точек внутри bounding box
+    let px = minX + Math.random() * (maxX - minX);
+    let py = minY + Math.random() * (maxY - minY);
+
+    if (insidePolygon(px, py, transformedPoints)) {
+      // Поиск неактивной частицы в пуле
+      let particle = null;
+      for (let j = 0; j < particlePool.length; j++) {
+        if (!particlePool[j].active) {
+          particle = particlePool[j];
+          break;
+        }
+      }
+
+      if (particle) {
+        particle.x = px;
+        particle.y = py;
+        particle.vx = (Math.random() - 0.5) * 0.6;
+        particle.vy = (Math.random() - 0.5) * 0.6;
+        particle.radius = 3 + Math.random() * 22;
+        particle.color = color(
+          Math.random() * 255,
+          Math.random() * 255,
+          Math.random() * 255,
+        );
+        particle.active = true;
+
+        noisePoints.push(particle);
+        activeCount++;
+      }
+    }
+  }
+}
+
+// Оптимизированное обновление частиц
+function updateParticles() {
   for (let i = noisePoints.length - 1; i >= 0; i--) {
     let pt = noisePoints[i];
     pt.x += pt.vx;
     pt.y += pt.vy;
-    fill(0, 0, 0, pt.alpha);
-    circle(pt.x, pt.y, sz);
-    pt.alpha -= 3;
-    if (pt.alpha <= 0) {
+    pt.radius -= 0.2;
+
+    if (pt.radius <= 0) {
+      pt.active = false;
       noisePoints.splice(i, 1);
     }
   }
 }
 
-function rotateArray(arr, count) {
-  return arr.slice(count).concat(arr.slice(0, count));
+// Оптимизированная отрисовка частиц
+function renderParticles() {
+  let colorMode = sliderColorMode.value();
+
+  for (let pt of noisePoints) {
+    switch (colorMode) {
+      case "Black":
+        fill(0);
+        break;
+      case "White":
+      default:
+        fill(255);
+        break;
+    }
+    circle(pt.x, pt.y, pt.radius * 2);
+  }
 }
 
-function generateNoise(transformedPoints, bounds) {
-  let density = 900;
-  for (let i = 0; i < density; i++) {
-    let px = random(bounds.minX, bounds.maxX);
-    let py = random(bounds.minY, bounds.maxY);
-    if (insidePolygon(px, py, transformedPoints)) {
-      noisePoints.push({
-        x: px,
-        y: py,
-        vx: random(-0.3, 0.3),
-        vy: random(-0.3, 0.3),
-        alpha: 255,
-      });
-    }
-  }
+function rotateArray(arr, count) {
+  return arr.slice(count).concat(arr.slice(0, count));
 }
 
 function transformPoint(px, py, tx, ty, scaleX, scaleY, angleDeg) {
