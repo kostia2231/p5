@@ -32,6 +32,10 @@ let noisePoints = [];
 // Пул для переиспользования объектов частиц
 let particlePool = [];
 
+// Переменная для паузы
+let isPaused = false;
+let pauseButton;
+
 let lastHitTime = 0;
 const hitCooldown = 1000;
 const MAX_NOISE_POINTS = 1000;
@@ -150,6 +154,22 @@ function setup() {
   sliderColorMode = createSelect().parent(container).style("width", "100%");
   sliderColorMode.option("Black");
   sliderColorMode.option("White");
+  sliderColorMode.option("Rainbow");
+
+  // Добавляем кнопку паузы
+  createDiv("").parent(container); // Небольшой отступ
+  pauseButton = createButton("Пауза")
+    .parent(container)
+    .style("width", "100%")
+    .style("padding", "10px")
+    .style("background", "#4CAF50")
+    .style("color", "white")
+    .style("border", "none")
+    .style("border-radius", "4px")
+    .style("cursor", "pointer")
+    .style("font-size", "14px")
+    .style("margin-top", "5px")
+    .mousePressed(togglePause);
 
   resetSimulation();
 }
@@ -200,6 +220,12 @@ function resetSimulation() {
 }
 
 function draw() {
+  // Если на паузе, не обновляем логику, только отрисовываем текущее состояние
+  if (isPaused) {
+    drawCurrentFrame();
+    return;
+  }
+
   noStroke();
   background(255);
   image(bgImg, 0, 0, width, height);
@@ -325,6 +351,61 @@ function draw() {
   renderParticles();
 }
 
+// Функция для отрисовки текущего кадра без обновления логики (для паузы)
+function drawCurrentFrame() {
+  noStroke();
+  background(255);
+  image(bgImg, 0, 0, width, height);
+
+  // Используем кэшированные точки если они есть
+  let transformedPoints = cachedTransformedPoints;
+  if (!transformedPoints || transformedPoints.length === 0) {
+    // Если кэша нет, пересчитываем для отображения
+    let origBounds = getBoundingBox(currentPoints);
+    let scaleX = currentWidth / origBounds.width;
+    let scaleY = currentHeight / origBounds.height;
+
+    transformedPoints = currentPoints.map((p) =>
+      transformPoint(
+        p.x - origBounds.minX,
+        p.y - origBounds.minY,
+        x,
+        y,
+        scaleX,
+        scaleY,
+        rotationAngle,
+      ),
+    );
+  }
+
+  // Отрисовка фигуры
+  blendMode(DIFFERENCE);
+  noStroke();
+  fill("white");
+  beginShape();
+  for (let p of transformedPoints) vertex(p.x, p.y);
+  endShape(CLOSE);
+
+  blendMode(BLEND);
+  noStroke();
+
+  // Отрисовка частиц без обновления их позиций
+  renderParticles();
+}
+
+// Функция переключения паузы
+function togglePause() {
+  isPaused = !isPaused;
+
+  if (isPaused) {
+    pauseButton.html("Продолжить");
+    pauseButton.style("background", "#f44336").style("margin-top", "5px"); // Красный цвет
+  } else {
+    pauseButton.html("Пауза");
+    pauseButton.style("background", "#4CAF50").style("margin-top", "5px"); // Зеленый цвет
+  }
+}
+
 // Оптимизированная генерация частиц
 function generateNoiseOptimized(transformedPoints, bounds) {
   let density = 500;
@@ -394,6 +475,9 @@ function renderParticles() {
     switch (colorMode) {
       case "Black":
         fill(0);
+        break;
+      case "Rainbow":
+        fill(pt.color);
         break;
       case "White":
       default:
