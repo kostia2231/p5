@@ -91,7 +91,7 @@ function setup() {
 
   shapes = [
     shape1,
-    rotateArray(shape2_raw.reverse(), 15),
+    rotateArray(shape2_raw.reverse(), 5),
     rotateArray(shape3_raw.reverse(), 25),
   ];
   currentPoints = shape1.map((p) => ({ x: p.x, y: p.y }));
@@ -112,7 +112,7 @@ function setup() {
     .style("width", "100%")
     .input(resetSimulation);
 
-  createDiv("H:").parent(container);
+  createDiv("Тащи еще бумаги! Зацепи по-больше влаги!").parent(container);
   sliderStartHeight = createSlider(100, 600, 300, 1)
     .parent(container)
     .style("opacity", "0")
@@ -158,7 +158,8 @@ function resetSimulation() {
 }
 
 function draw() {
-  background("#eee");
+  noStroke();
+  background(200, 200, 200, 20);
   image(bgImg, 0, 0, width, height);
 
   x += dx;
@@ -228,11 +229,12 @@ function draw() {
     randomizeOneSide();
     targetAngle = random(-45, 45);
     textColor = random(textColors);
-    generateNoise(transformedPoints, bounds);
-    if (hitCount >= 3) {
+    // Убрали generateNoise отсюда!
+    if (hitCount >= 2) {
       isMorphing = true;
       progress = 0;
       hitCount = 0;
+      generateNoise(transformedPoints, bounds);
     }
   }
 
@@ -256,7 +258,7 @@ function draw() {
     pt.y += pt.vy;
     fill(0, 0, 0, pt.alpha);
     circle(pt.x, pt.y, sz);
-    pt.alpha -= 5;
+    pt.alpha -= 3;
     if (pt.alpha <= 0) {
       noisePoints.splice(i, 1);
     }
@@ -268,7 +270,7 @@ function rotateArray(arr, count) {
 }
 
 function generateNoise(transformedPoints, bounds) {
-  let density = 1000;
+  let density = 900;
   for (let i = 0; i < density; i++) {
     let px = random(bounds.minX, bounds.maxX);
     let py = random(bounds.minY, bounds.maxY);
