@@ -154,7 +154,6 @@ function setup() {
   sliderColorMode = createSelect().parent(container).style("width", "100%");
   sliderColorMode.option("Black");
   sliderColorMode.option("White");
-  sliderColorMode.option("Rainbow");
 
   // Добавляем кнопку паузы
   createDiv("").parent(container); // Небольшой отступ
