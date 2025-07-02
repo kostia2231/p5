@@ -216,8 +216,10 @@ function resetSimulation() {
 
   rotationAngle = 0;
   targetAngle = 0;
-  dx = random(1, 2.5) * (random() < 0.5 ? 1 : -1);
-  dy = random(1, 2.5) * (random() < 0.5 ? 1 : -1);
+
+  //скорость движения
+  dx = random(1, 3) * (random() < 0.5 ? 1 : -1);
+  dy = random(1, 3) * (random() < 0.5 ? 1 : -1);
 
   textColor = "#000000";
 
@@ -455,7 +457,7 @@ function generateNoiseOptimized(transformedPoints, bounds) {
         particle.y = py;
         particle.vx = (Math.random() - 0.5) * 0.6;
         particle.vy = (Math.random() - 0.5) * 0.6;
-        particle.radius = 3 + Math.random() * 22;
+        particle.radius = 3 + Math.random() * 20;
         particle.color = color(
           Math.random() * 255,
           Math.random() * 255,
@@ -491,9 +493,6 @@ function renderParticles() {
     switch (colorMode) {
       case "Black":
         fill(0);
-        break;
-      case "Rainbow":
-        fill(pt.color);
         break;
       case "White":
       default:
