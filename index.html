@@ -7,14 +7,58 @@
         <title>Sketch</title>
 
         <link rel="stylesheet" type="text/css" href="style.css" />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/ccapture.js/1.1.0/CCapture.all.min.js"></script>
         <script src="libraries/p5.min.js"></script>
         <script src="libraries/p5.sound.min.js"></script>
+        <script src="libraries/CCapture.all.min.js"></script>
         <script src="https://unpkg.com/ml5@1/dist/ml5.min.js"></script>
-        <!-- <button>hi</button> -->
+        <button id="recordBtn">start rec</button>
+        <!-- <button id="stopBtn">stop rec</button> -->
     </head>
 
     <body>
         <script src="sketch.js"></script>
+        <script>
+            setTimeout(() => {
+                const recordBtn = document.querySelector("button");
+                const canvas = document.querySelector("canvas");
+                console.log(canvas);
+                let recording = false;
+                let mediaRecorder;
+                let recordedChunks;
+
+                recordBtn.addEventListener("click", () => {
+                    recording = !recording;
+                    if (recording) {
+                        recordBtn.textContent = "Stop";
+                        const stream = canvas.captureStream(60);
+                        mediaRecorder = new MediaRecorder(stream, {
+                            mimeType: "video/webm;codecs=vp9",
+                            ignoreMutedMedia: true,
+                        });
+                        recordedChunks = [];
+                        mediaRecorder.ondataavailable = (e) => {
+                            if (e.data.size > 0) {
+                                recordedChunks.push(e.data);
+                            }
+                        };
+                        mediaRecorder.start();
+                    } else {
+                        recordBtn.textContent = "Record";
+                        mediaRecorder.stop();
+                        setTimeout(() => {
+                            const blob = new Blob(recordedChunks, {
+                                type: "video/webm",
+                            });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement("a");
+                            a.href = url;
+                            a.download = "recording.webm";
+                            a.click();
+                            URL.revokeObjectURL(url);
+                        }, 0);
+                    }
+                });
+            }, 500);
+        </script>
     </body>
 </html>

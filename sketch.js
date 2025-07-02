@@ -15,7 +15,6 @@ let currentWidth, currentHeight;
 let rotationAngle = 0;
 let targetAngle = 0;
 
-// Кэширование для оптимизации
 let cachedTransformedPoints = [];
 let cachedBounds = null;
 let lastTransformParams = null;
@@ -29,10 +28,8 @@ let textColors = ["#000000"];
 let textColor = "#000000";
 
 let noisePoints = [];
-// Пул для переиспользования объектов частиц
 let particlePool = [];
 
-// Переменная для паузы
 let isPaused = false;
 let pauseButton;
 
@@ -41,29 +38,47 @@ const hitCooldown = 1000;
 const MAX_NOISE_POINTS = 1000;
 
 function preload() {
-  bgImg = loadImage("assets/u.svg");
+  bgImg = loadImage("assets/afisha.svg");
 }
-
+let canvas;
 function setup() {
-  createCanvas(600, 600);
+  canvas = createCanvas(600, 600);
   angleMode(DEGREES);
 
+  // const shape1 = [
+  //   { x: 460.5, y: 28.5 },
+  //   { x: 227, y: 1 },
+  //   { x: 227, y: 154 },
+  //   { x: 1.21094, y: 214.5 },
+  //   { x: 1.21094, y: 494.5 },
+  //   { x: 71.5, y: 494.5 },
+  //   { x: 95.5, y: 364.431 },
+  //   { x: 203, y: 364.431 },
+  //   { x: 227, y: 531 },
+  //   { x: 298, y: 531 },
+  //   { x: 316.5, y: 353.043 },
+  //   { x: 365.039, y: 329 },
+  //   { x: 388, y: 406.5 },
+  //   { x: 460.5, y: 406.5 },
+  //   { x: 460.5, y: 28.5 },
+  // ];
+  //
   const shape1 = [
-    { x: 460.5, y: 28.5 },
-    { x: 227, y: 1 },
-    { x: 227, y: 154 },
-    { x: 1.21094, y: 214.5 },
-    { x: 1.21094, y: 494.5 },
-    { x: 71.5, y: 494.5 },
-    { x: 95.5, y: 364.431 },
-    { x: 203, y: 364.431 },
-    { x: 227, y: 531 },
-    { x: 298, y: 531 },
-    { x: 316.5, y: 353.043 },
-    { x: 365.039, y: 329 },
-    { x: 388, y: 406.5 },
-    { x: 460.5, y: 406.5 },
-    { x: 460.5, y: 28.5 },
+    { x: 46.5, y: 318.5 },
+    { x: 203.5, y: 433.5 },
+    { x: 266, y: 482 },
+    { x: 496, y: 268.5 },
+    { x: 522.5, y: 113 },
+    { x: 478, y: 26 },
+    { x: 387, y: 0 },
+    { x: 322.5, y: 26 },
+    { x: 258, y: 123 },
+    { x: 248, y: 207.5 },
+    { x: 236, y: 92.5 },
+    { x: 169.5, y: 26 },
+    { x: 90.5, y: 0 },
+    { x: 0, y: 78.5 },
+    { x: 0, y: 224 },
   ];
 
   const shape2_raw = [
@@ -102,14 +117,20 @@ function setup() {
     { x: 588, y: 0 },
   ];
 
+  // shapes = [
+  //   rotateArray(shape1.reverse(), 0),
+  //   rotateArray(shape2_raw.reverse(), 5),
+  //   rotateArray(shape3_raw.reverse(), 25),
+  // ];
+
   shapes = [
     shape1,
-    rotateArray(shape2_raw.reverse(), 5),
-    rotateArray(shape3_raw.reverse(), 25),
+    rotateArray(shape2_raw.reverse(), 10),
+    rotateArray(shape3_raw.reverse(), 10),
   ];
+
   currentPoints = shape1.map((p) => ({ x: p.x, y: p.y }));
 
-  // Инициализация пула частиц
   initParticlePool();
 
   let container = createDiv()
@@ -155,13 +176,12 @@ function setup() {
   sliderColorMode.option("Black");
   sliderColorMode.option("White");
 
-  // Добавляем кнопку паузы
-  createDiv("").parent(container); // Небольшой отступ
+  createDiv("").parent(container);
   pauseButton = createButton("Пауза")
     .parent(container)
     .style("width", "100%")
     .style("padding", "10px")
-    .style("background", "#4CAF50")
+    .style("background", "rgba(0,0,0,1)")
     .style("color", "white")
     .style("border", "none")
     .style("border-radius", "4px")
@@ -173,7 +193,6 @@ function setup() {
   resetSimulation();
 }
 
-// Инициализация пула частиц для переиспользования
 function initParticlePool() {
   for (let i = 0; i < MAX_NOISE_POINTS; i++) {
     particlePool.push({
@@ -202,7 +221,6 @@ function resetSimulation() {
 
   textColor = "#000000";
 
-  // Деактивация всех частиц вместо создания нового массива
   for (let particle of particlePool) {
     particle.active = false;
   }
@@ -213,13 +231,11 @@ function resetSimulation() {
   isMorphing = false;
   lastHitTime = 0;
 
-  // Сброс кэша
   cachedBounds = null;
   lastTransformParams = null;
 }
 
 function draw() {
-  // Если на паузе, не обновляем логику, только отрисовываем текущее состояние
   if (isPaused) {
     drawCurrentFrame();
     return;
@@ -235,7 +251,6 @@ function draw() {
   let from = shapes[currentShapeIndex];
   let to = shapes[nextShapeIndex];
 
-  // Морфинг только при необходимости
   if (isMorphing) {
     progress += 0.02;
     if (progress >= 1) {
@@ -243,18 +258,17 @@ function draw() {
       isMorphing = false;
       currentShapeIndex = nextShapeIndex;
       nextShapeIndex = (nextShapeIndex + 1) % shapes.length;
-      // Сброс кэша при смене фигуры
+
       lastTransformParams = null;
     }
     for (let i = 0; i < currentPoints.length; i++) {
       currentPoints[i].x = lerp(from[i].x, to[i].x, progress);
       currentPoints[i].y = lerp(from[i].y, to[i].y, progress);
     }
-    // Сброс кэша при морфинге
+
     lastTransformParams = null;
   }
 
-  // Кэширование трансформаций
   let transformParams = `${x},${y},${currentWidth},${currentHeight},${rotationAngle}`;
   let transformedPoints, bounds;
 
@@ -277,23 +291,20 @@ function draw() {
 
     bounds = getBoundingBox(transformedPoints);
 
-    // Кэширование результатов
     cachedTransformedPoints = transformedPoints;
     cachedBounds = bounds;
     lastTransformParams = transformParams;
   } else {
-    // Использование кэшированных значений
     transformedPoints = cachedTransformedPoints;
     bounds = cachedBounds;
   }
 
-  // Проверка коллизий
   let hit = false;
   if (bounds.minX < 0) {
     dx = abs(dx);
     x += -bounds.minX;
     hit = true;
-    lastTransformParams = null; // Сброс кэша
+    lastTransformParams = null;
   }
   if (bounds.maxX > width) {
     dx = -abs(dx);
@@ -334,7 +345,22 @@ function draw() {
   currentHeight = lerp(currentHeight, targetHeight, 0.1);
   rotationAngle = lerp(rotationAngle, targetAngle, 0.1);
 
-  // Отрисовка фигуры
+  // fill(0);
+  // textSize(10);
+  // for (let i = 0; i < transformedPoints.length; i++) {
+  //   text(i, transformedPoints[i].x + 5, transformedPoints[i].y - 5);
+  // }
+  // fill(textColor); // или другой цвет
+  // textSize(20); // Размер текста
+
+  // const textStr = "...............";
+  // const letters = textStr.split("");
+
+  // for (let i = 0; i < letters.length && i < transformedPoints.length; i++) {
+  //   const p = transformedPoints[i];
+  //   text(letters[i], p.x, p.y);
+  // }
+
   blendMode(DIFFERENCE);
   noStroke();
   fill("white");
@@ -345,21 +371,21 @@ function draw() {
   blendMode(BLEND);
   noStroke();
 
-  // Оптимизированное обновление частиц
   updateParticles();
   renderParticles();
+
+  // if (capturing && capturer) {
+  //   capturer.capture(canvas.canvas);
+  // }
 }
 
-// Функция для отрисовки текущего кадра без обновления логики (для паузы)
 function drawCurrentFrame() {
   noStroke();
   background(255);
   image(bgImg, 0, 0, width, height);
 
-  // Используем кэшированные точки если они есть
   let transformedPoints = cachedTransformedPoints;
   if (!transformedPoints || transformedPoints.length === 0) {
-    // Если кэша нет, пересчитываем для отображения
     let origBounds = getBoundingBox(currentPoints);
     let scaleX = currentWidth / origBounds.width;
     let scaleY = currentHeight / origBounds.height;
@@ -377,7 +403,6 @@ function drawCurrentFrame() {
     );
   }
 
-  // Отрисовка фигуры
   blendMode(DIFFERENCE);
   noStroke();
   fill("white");
@@ -388,41 +413,35 @@ function drawCurrentFrame() {
   blendMode(BLEND);
   noStroke();
 
-  // Отрисовка частиц без обновления их позиций
   renderParticles();
 }
 
-// Функция переключения паузы
 function togglePause() {
   isPaused = !isPaused;
 
   if (isPaused) {
     pauseButton.html("Продолжить");
-    pauseButton.style("background", "#f44336"); // Красный цвет
+    pauseButton.style("background", "rgba(0,0,0,0.5)");
   } else {
     pauseButton.html("Пауза");
-    pauseButton.style("background", "#4CAF50"); // Зеленый цвет
+    pauseButton.style("background", "rgba(0,0,0,1)");
   }
 }
 
-// Оптимизированная генерация частиц
 function generateNoiseOptimized(transformedPoints, bounds) {
-  let density = sliderNoiseDensity.value(); // Используем значение слайдера
+  let density = sliderNoiseDensity.value();
   let activeCount = noisePoints.length;
 
-  // Предрасчет для быстрой проверки попадания в полигон
   let minX = bounds.minX;
   let maxX = bounds.maxX;
   let minY = bounds.minY;
   let maxY = bounds.maxY;
 
   for (let i = 0; i < density && activeCount < MAX_NOISE_POINTS; i++) {
-    // Более эффективная генерация точек внутри bounding box
     let px = minX + Math.random() * (maxX - minX);
     let py = minY + Math.random() * (maxY - minY);
 
     if (insidePolygon(px, py, transformedPoints)) {
-      // Поиск неактивной частицы в пуле
       let particle = null;
       for (let j = 0; j < particlePool.length; j++) {
         if (!particlePool[j].active) {
@@ -451,7 +470,6 @@ function generateNoiseOptimized(transformedPoints, bounds) {
   }
 }
 
-// Оптимизированное обновление частиц
 function updateParticles() {
   for (let i = noisePoints.length - 1; i >= 0; i--) {
     let pt = noisePoints[i];
@@ -466,7 +484,6 @@ function updateParticles() {
   }
 }
 
-// Оптимизированная отрисовка частиц
 function renderParticles() {
   let colorMode = sliderColorMode.value();
 
