@@ -30,7 +30,7 @@
                     recording = !recording;
                     if (recording) {
                         recordBtn.textContent = "Stop";
-                        const stream = canvas.captureStream(60);
+                        const stream = canvas.captureStream(120);
                         mediaRecorder = new MediaRecorder(stream, {
                             mimeType: "video/webm;codecs=vp9",
                             ignoreMutedMedia: true,
