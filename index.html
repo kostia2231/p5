@@ -34,6 +34,7 @@
                         mediaRecorder = new MediaRecorder(stream, {
                             mimeType: "video/webm;codecs=vp9",
                             ignoreMutedMedia: true,
+                            videoBitsPerSecond: 20000000
                         });
                         recordedChunks = [];
                         mediaRecorder.ondataavailable = (e) => {
