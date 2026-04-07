@@ -104,7 +104,6 @@ function draw() {
         layers.shift();
     }
 
-    // Текст
     fill(0);
     textFont("Helvetica", 75);
     textAlign(LEFT, TOP);
@@ -118,30 +117,8 @@ function draw() {
     image(noiseImage, 0, 0);
 }
 
-// Запись видео
 let chunks = [];
 let recording = false;
-
-function keyPressed() {
-    if (key === "r" || key === "к") {
-        if (!recording) {
-            chunks = [];
-            let stream = canvas.captureStream(60);
-            recorder = new MediaRecorder(stream, {
-                mimeType: "video/webm; codecs=vp9",
-            });
-            recorder.ondataavailable = (e) => chunks.push(e.data);
-            recorder.onstop = exportVideo;
-            recorder.start();
-            recording = true;
-            console.log("Запись пошла...");
-        } else {
-            recorder.stop();
-            recording = false;
-            console.log("Запись окончена.");
-        }
-    }
-}
 
 function exportVideo() {
     let blob = new Blob(chunks, { type: "video/webm" });
