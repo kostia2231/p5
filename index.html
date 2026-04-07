@@ -19,9 +19,10 @@
             overflow: hidden;
             background-color: #ffffff;
             font-family: "fOnT",system-ui, Helvetica, sans-serif;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
-            color: rgba(100, 100, 100, 1);
+            /*color: rgba(100, 100, 100, 1);*/
+            color:black;
         }
 
         .logo{
@@ -60,13 +61,15 @@
             width: fit-content;
 
             display: flex;
-            gap: 5px;
+            flex-direction: column;
+            /*gap: 5px;*/
 
             transition: scale 0.05s linear;
         }
 
-        .world-image:hover {
+        .world-image:hover > img{
              scale: 1.1;
+             transition: scale 0.2s linear;
         }
 
         .world__inner {
@@ -120,17 +123,42 @@
             height: fit-content;
             pointer-events: auto;
         }
-        .world-image__desc{
-            visibility: hidden;
+
+        .world-image__desc {
+            z-index: 2;
+            display: flex;
+            gap: 3px;
+            position: absolute;
+            left: -10px;
+            bottom: -17px;
+            pointer-events: none;
+
             white-space: nowrap;
         }
-        .world-image:hover .world-image__desc {
+
+        .world-image__desc .btn-custom__background {
+            visibility: hidden;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: transform 0.2s ease, opacity 0.2s ease, visibility 0.2s;
+        }
+
+        .world-image:hover .world-image__desc .btn-custom__background {
             visibility: visible;
             opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
         }
+
+        .world-image:hover .world-image__desc .btn-custom__background:nth-child(1) { transition-delay: 0.0s; }
+        .world-image:hover .world-image__desc .btn-custom__background:nth-child(2) { transition-delay: 0.1s; }
+        .world-image:hover .world-image__desc .btn-custom__background:nth-child(3) { transition-delay: 0.2s; }
+        .world-image:hover .world-image__desc .btn-custom__background:nth-child(4) { transition-delay: 0.3s; }
+        .world-image:hover .world-image__desc .btn-custom__background:nth-child(5) { transition-delay: 0.4s; }
         .world__inner__wrapper{
             display: flex;
         }
+
         .switcher{
             margin-left: auto;
         }
@@ -157,7 +185,6 @@
             backdrop-filter: blur(5px);
         }
         .maria__inner{
-
             padding: 5px 10px;
         }
         .instractions{
@@ -165,7 +192,6 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-
 
             z-index: 10;
             pointer-events: none;
@@ -175,7 +201,6 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-
 
             z-index: 0;
             pointer-events: none;
@@ -188,7 +213,6 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-
 
             z-index: 0;
             pointer-events: none;
@@ -247,13 +271,40 @@
                 </div>
             </div>
         </div>
-        <div class="instractions">© by Mariia Kvasnevska</div>
+        <div class="instractions">© Mariia Kvasnevska</div>
         <div class="instractions__line-x"></div>
         <div class="instractions__line-y"></div>
         <div id="world">
             <div class="world__inner">
                 <div class="world-image">
                     <img src="images/1.png"  draggable="false" height="400px">
+                    <div class="world-image__desc">
+                        <div class="btn-custom__background">
+                            <div class="btn-custom__inner">
+                                Production
+                            </div>
+                        </div>
+                        <div class="btn-custom__background">
+                            <div class="btn-custom__inner">
+                                Styling
+                            </div>
+                        </div>
+                        <div class="btn-custom__background">
+                            <div class="btn-custom__inner">
+                                Art Direction
+                            </div>
+                        </div>
+                        <div class="btn-custom__background">
+                            <div class="btn-custom__inner">
+                                Set Design
+                            </div>
+                        </div>
+                        <div class="btn-custom__background">
+                            <div class="btn-custom__inner">
+                                Video
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="world-image">
                     <img src="images/2.png"  draggable="false" height="400px">
