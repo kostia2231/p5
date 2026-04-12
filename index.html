@@ -1,525 +1,685 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MASHA DEV</title>
-    <style>
-        @font-face {
-            font-family: 'fOnT';
-            src: url('font/KTF2101-Bold.otf') format('opentype');
-            font-weight: normal;
-            font-style: normal;
-        }
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            background-color: #ffffff;
-            font-family: "fOnT",system-ui, Helvetica, sans-serif;
-            font-size: 11px;
-            font-weight: 500;
-            /*color: rgba(100, 100, 100, 1);*/
-            color:black;
-        }
-
-        .logo{
-            font-weight: 500;
-        }
-
-        #viewport {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            cursor:default;
-        }
-
-        #viewport:active {
-            cursor:default;
-        }
-
-        #world {
-            position: absolute;
-            top: 0;
-            left: 0;
-            will-change: transform;
-
-            width: 100%;
-        }
-
-        .world-image {
-            position: relative;
-            user-select: none;
-            -webkit-user-drag: none;
-            will-change: transform, z-index;
-            cursor: pointer;
-            z-index: 1;
-
-            height: fit-content;
-            width: fit-content;
-
-            display: flex;
-            flex-direction: column;
-            /*gap: 5px;*/
-
-            transition: scale 0.05s linear;
-        }
-
-        .world-image:hover > img{
-             scale: 1.1;
-             transition: scale 0.2s linear;
-        }
-
-        .world__inner {
-            width: 100%;
-
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            position: absolute;
-            transform: translate(-50%, -50%);
-        }
-
-        .ui-layer{
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-
-            z-index: 3;
-
-            padding: 3px;
-            pointer-events: none;
-        }
-        .ui-layer__cat-navigation{
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .ui-layer__cat-navigation__inline{
-            display: flex;
-            flex-direction: row;
-            gap: 2px;
-        }
-        /*.ui-layer__cat-navigation > div{
-            background-color: rgba(245, 245, 245, 1);
-            width: fit-content;
-            padding: 5px 10px;
-            cursor: pointer;
-
-            pointer-events: auto;
-        }*/
-        .ui-layer__cat-navigation__inline > div{
-            /*background-color: rgba(245, 245, 245, 1);
-            width: fit-content;
-            height: fit-content;
-            padding: 5px 10px;
-            cursor: pointer;*/
-
-            height: fit-content;
-            pointer-events: auto;
-        }
-
-        .world-image__desc {
-            z-index: 2;
-            display: flex;
-            gap: 3px;
-            position: absolute;
-            left: -10px;
-            bottom: -17px;
-            pointer-events: none;
-
-            white-space: nowrap;
-        }
-
-        .world-image__desc .btn-custom__background {
-            visibility: hidden;
-            opacity: 0;
-            transform: translateY(15px);
-            transition: transform 0.2s ease, opacity 0.2s ease, visibility 0.2s;
-        }
-
-        .world-image:hover .world-image__desc .btn-custom__background {
-            visibility: visible;
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-
-        .world-image:hover .world-image__desc .btn-custom__background:nth-child(1) { transition-delay: 0.0s; }
-        .world-image:hover .world-image__desc .btn-custom__background:nth-child(2) { transition-delay: 0.1s; }
-        .world-image:hover .world-image__desc .btn-custom__background:nth-child(3) { transition-delay: 0.2s; }
-        .world-image:hover .world-image__desc .btn-custom__background:nth-child(4) { transition-delay: 0.3s; }
-        .world-image:hover .world-image__desc .btn-custom__background:nth-child(5) { transition-delay: 0.4s; }
-        .world__inner__wrapper{
-            display: flex;
-        }
-
-        .switcher{
-            margin-left: auto;
-        }
-        .btn-custom__background{
-            background-color: rgba(245, 245, 245, 0.1);
-            width: fit-content;
-            padding: 3px;
-
-            backdrop-filter: blur(5px);
-
-            cursor: pointer;
-            pointer-events: auto;
-        }
-        .btn-custom__inner{
-            background-color: rgba(245, 245, 245, 1);
-            padding: 5px 10px;
-        }
-        .maria{
-            background-color: rgba(245, 245, 245, 0.1);
-            width: fit-content;
-            height: fit-content;
-            padding: 3px;
-
-            backdrop-filter: blur(5px);
-        }
-        .maria__inner{
-            padding: 5px 10px;
-        }
-        .instractions{
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-
-            z-index: 10;
-            pointer-events: none;
-        }
-        .instractions__line-x {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-
-            z-index: 0;
-            pointer-events: none;
-            width: 1px;
-            background-color: rgba(245, 245, 245, 1);
-            height: 100%;
-        }
-        .instractions__line-y {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-
-            z-index: 0;
-            pointer-events: none;
-            width: 100%;
-            background-color: rgba(245, 245, 245, 1);
-            height: 1px;
-        }
-    </style>
-</head>
-<body>
-
-    <div id="viewport">
-        <div class="ui-layer">
-            <div class="ui-layer__cat-navigation">
-                <div class="btn-custom__background">
-                    <div class="btn-custom__inner">
-                        Video
-                    </div>
-                </div>
-                <div class="btn-custom__background">
-                    <div class="btn-custom__inner">
-                        Photography
-                    </div>
-                </div>
-                <div class="btn-custom__background">
-                    <div class="btn-custom__inner">
-                        Events
-                    </div>
-                </div>
-                <div class="btn-custom__background">
-                    <div class="btn-custom__inner">
-                        Archive
-                    </div>
-                </div>
-                <div class="btn-custom__background">
-                    <div class="btn-custom__inner">
-                        About
-                    </div>
-                </div>
-            </div>
-
-            <!--<div class="maria">
-                <div class="maria__inner">Mariia</div>
-            </div>-->
-
-            <div class="ui-layer__cat-navigation__inline">
-                <div class="btn-custom__background">
-                    <div class="btn-custom__inner">
-                        E-mail
-                    </div>
-                </div>
-                <div class="btn-custom__background">
-                    <div class="btn-custom__inner">
-                        Instagram
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="instractions">© Mariia Kvasnevska</div>
-        <div class="instractions__line-x"></div>
-        <div class="instractions__line-y"></div>
-        <div id="world">
-            <div class="world__inner">
-                <div class="world-image">
-                    <img src="images/1.png"  draggable="false" height="400px">
-                    <div class="world-image__desc">
-                        <div class="btn-custom__background">
-                            <div class="btn-custom__inner">
-                                Production
-                            </div>
-                        </div>
-                        <div class="btn-custom__background">
-                            <div class="btn-custom__inner">
-                                Styling
-                            </div>
-                        </div>
-                        <div class="btn-custom__background">
-                            <div class="btn-custom__inner">
-                                Art Direction
-                            </div>
-                        </div>
-                        <div class="btn-custom__background">
-                            <div class="btn-custom__inner">
-                                Set Design
-                            </div>
-                        </div>
-                        <div class="btn-custom__background">
-                            <div class="btn-custom__inner">
-                                Video
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="world-image">
-                    <img src="images/2.png"  draggable="false" height="400px">
-                </div>
-                <div class="world-image">
-                    <img src="images/7.png"  draggable="false" height="400px">
-                </div>
-                <div class="world-image">
-                    <img src="images/8.png"  draggable="false" height="400px">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const viewport = document.getElementById('viewport');
-        const world = document.getElementById('world');
-        const descs = document.querySelectorAll('.world-image__desc');
-
-        let isDragging = false;
-        let startX, startY;
-
-        let translateX = window.innerWidth / 2;
-        let translateY = window.innerHeight / 2;
-
-        let autoAngle = 0;
-
-        const BOUNDARIES = {
-            minX: 0,
-            maxX: 1000,
-            minY: -500,
-            maxY: 1000
-        };
-
-        function clamp(value, min, max) {
-            return Math.max(min, Math.min(max, value));
-        }
-
-        translateX = clamp(translateX, BOUNDARIES.minX, BOUNDARIES.maxX);
-        translateY = clamp(translateY, BOUNDARIES.minY, BOUNDARIES.maxY);
-
-        world.style.transform = `translate(${translateX}px, ${translateY}px)`;
-
-        viewport.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            startX = e.clientX - translateX;
-            startY = e.clientY - translateY;
-        });
-
-        window.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-
-            let newX = e.clientX - startX;
-            let newY = e.clientY - startY;
-
-            translateX = clamp(newX, BOUNDARIES.minX, BOUNDARIES.maxX);
-            translateY = clamp(newY, BOUNDARIES.minY, BOUNDARIES.maxY);
-
-            world.style.transform = `translate(${translateX}px, ${translateY}px)`;
-        });
-
-        window.addEventListener('mouseup', () => { isDragging = false; });
-        window.addEventListener('mouseleave', () => { isDragging = false; });
-
-        window.addEventListener('wheel', (e) => {
-            e.preventDefault();
-
-            let newX = translateX - e.deltaX;
-            let newY = translateY - e.deltaY;
-
-            translateX = clamp(newX, BOUNDARIES.minX, BOUNDARIES.maxX);
-            translateY = clamp(newY, BOUNDARIES.minY, BOUNDARIES.maxY);
-
-            world.style.transform = `translate(${translateX}px, ${translateY}px)`;
-        }, { passive: false });
-
-        const images = document.querySelectorAll('.world-image');
-        const imageStates = new Map();
-
-        images.forEach(img => {
-            const safeWidth = window.innerWidth - 500;
-            const randomX = Math.random() * safeWidth;
-
-            img.style.left = `${Math.max(0, randomX)}px`;
-
-            imageStates.set(img, {
-                currentX: 0, currentY: 0,
-                targetX: 0, targetY: 0,
-                pushX: 0, pushY: 0,
-                isHovered: false
-            });
-
-            img.addEventListener('mouseenter', () => {
-                imageStates.get(img).isHovered = true;
-                img.style.zIndex = 2;
-            });
-
-            img.addEventListener('mousemove', (e) => {
-                const state = imageStates.get(img);
-                if (!state.isHovered || isDragging) return;
-
-                const rect = img.getBoundingClientRect();
-
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-
-                const offsetX = e.clientX - centerX;
-                const offsetY = e.clientY - centerY;
-
-                const strength = 0.3;
-                state.targetX = offsetX * strength;
-                state.targetY = offsetY * strength;
-            });
-
-            img.addEventListener('mouseleave', () => {
-                const state = imageStates.get(img);
-                state.isHovered = false;
-                state.targetX = 0;
-                state.targetY = 0;
-
-                img.style.zIndex = 1;
-            });
-        });
-
-        function animateMagneticEffect() {
-            if (!isDragging) {
-                autoAngle += 0.005;
-
-                translateX += Math.cos(autoAngle) * 0.1;
-                translateY += Math.sin(autoAngle) * 0.1;
-
-                translateX = clamp(translateX, BOUNDARIES.minX, BOUNDARIES.maxX);
-                translateY = clamp(translateY, BOUNDARIES.minY, BOUNDARIES.maxY);
-
-                world.style.transform = `translate(${translateX}px, ${translateY}px)`;
+    <head>
+        <meta charset="UTF-8" />
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <title>MASHA DEV</title>
+
+        <style>
+            @font-face {
+                font-family: "fOnT";
+                src: url("font/KTF2101-Bold.otf") format("opentype");
+                font-weight: normal;
+                font-style: normal;
             }
 
-            images.forEach(img => {
-                imageStates.get(img).pushX = 0;
-                imageStates.get(img).pushY = 0;
+            body,
+            html {
+                margin: 0;
+                padding: 0;
+                width: 100vw;
+                height: 100vh;
+                overflow: hidden;
+                background-color: #ffffff;
+                font-family: "fOnT", system-ui, Helvetica, sans-serif;
+                font-size: 11px;
+                font-weight: 500;
+                color: black;
+            }
+
+            .logo {
+                font-weight: 500;
+            }
+
+            img{
+                height: 45vh !important;
+            }
+
+            #viewport {
+                width: 100%;
+                height: 100vh;
+                position: relative;
+                cursor: default;
+                overflow: hidden;
+            }
+
+            #viewport:active {
+                cursor: default;
+            }
+
+            #world {
+                position: absolute;
+                inset: 0;
+                will-change: transform;
+                width: 100%;
+                overflow: hidden;
+            }
+
+            .world__inner {
+                position: relative;
+                width: 100%;
+                height: 100%;
+            }
+
+            .col-wrapper {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                overflow-y: auto;
+                overflow-x: hidden;
+                pointer-events: none;
+                scrollbar-gutter: stable;
+            }
+
+            .left-wrapper {
+                z-index: 1;
+            }
+
+            .title-grey {
+                color: rgba(200, 200, 200, 1);
+            }
+
+            .right-wrapper {
+                z-index: 1;
+            }
+
+            .left {
+                width: 50%;
+                margin-right: 50%;
+                pointer-events: auto;
+                display: grid;
+                gap: 5px;
+                padding: 5px;
+                box-sizing: border-box;
+                min-height: 100%;
+            }
+
+            .right {
+                width: 50%;
+                margin-left: 50%;
+                pointer-events: auto;
+                display: grid;
+                gap: 5px;
+                padding: 5px;
+                box-sizing: border-box;
+                min-height: 100%;
+            }
+
+            .col-wrapper::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .col-wrapper::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .col-wrapper::-webkit-scrollbar-thumb {
+                background: rgba(0, 0, 0, 0.25);
+                border-radius: 3px;
+            }
+
+            .col-wrapper {
+                scrollbar-width: thin;
+                scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+            }
+
+            .world-image {
+                position: relative;
+                user-select: none;
+                -webkit-user-drag: none;
+                will-change: transform, z-index;
+                cursor: pointer;
+                z-index: 1;
+                height: fit-content;
+                width: fit-content;
+                display: flex;
+                flex-direction: column;
+                transition: scale 0.05s linear;
+            }
+
+            .world-image:hover > img {
+                scale: 1.1;
+            }
+            .world-image > img {
+                transition: scale 0.2s linear;
+            }
+
+            .ui-layer {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                z-index: 3;
+                padding: 5px;
+                pointer-events: none;
+            }
+
+            .ui-layer__cat-navigation {
+                display: flex;
+                flex-direction: column;
+                gap: 2.5px;
+            }
+
+            .ui-layer__cat-navigation__inline {
+                display: flex;
+                flex-direction: row;
+                gap: 2.5px;
+            }
+
+            .ui-layer__cat-navigation__inline > div {
+                height: fit-content;
+                pointer-events: auto;
+            }
+
+            .world-image__desc {
+                z-index: 2;
+                display: flex;
+                gap: 3px;
+                position: absolute;
+                left: -10px;
+                bottom: -17px;
+                pointer-events: none;
+                white-space: nowrap;
+            }
+
+            .world-image__desc .btn-custom__background {
+                visibility: hidden;
+                opacity: 0;
+                transform: translateY(15px);
+                transition:
+                    transform 0.2s ease,
+                    opacity 0.2s ease,
+                    visibility 0.2s;
+            }
+
+            .world-image:hover .world-image__desc .btn-custom__background {
+                visibility: visible;
+                opacity: 1;
+                transform: translateY(0);
+                pointer-events: auto;
+            }
+
+            .world-image:hover
+                .world-image__desc
+                .btn-custom__background:nth-child(1) {
+                transition-delay: 0s;
+            }
+
+            .world-image:hover
+                .world-image__desc
+                .btn-custom__background:nth-child(2) {
+                transition-delay: 0.1s;
+            }
+
+            .world-image:hover
+                .world-image__desc
+                .btn-custom__background:nth-child(3) {
+                transition-delay: 0.2s;
+            }
+
+            .world-image:hover
+                .world-image__desc
+                .btn-custom__background:nth-child(4) {
+                transition-delay: 0.3s;
+            }
+
+            .world-image:hover
+                .world-image__desc
+                .btn-custom__background:nth-child(5) {
+                transition-delay: 0.4s;
+            }
+
+            .btn-custom__background {
+                background-color: rgba(245, 245, 245, 0.1);
+                width: fit-content;
+                padding: 2.5px;
+                backdrop-filter: blur(5px);
+                cursor: pointer;
+                pointer-events: auto;
+            }
+
+            .btn-custom__inner {
+                background-color: rgba(245, 245, 245, 1);
+                padding: 5px 10px;
+            }
+
+            .instractions {
+                padding: 5px;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 10;
+                pointer-events: none;
+                color: rgba(200, 200, 200, 1);
+            }
+
+            .instractions:hover{
+                color: black;
+            }
+
+            .instractions__line-x {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 0;
+                pointer-events: none;
+                width: 1px;
+                background-color: rgba(245, 245, 245, 1);
+                height: 100%;
+            }
+
+            .instractions__line-y {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 0;
+                pointer-events: none;
+                width: 100%;
+                background-color: rgba(245, 245, 245, 1);
+                height: 1px;
+            }
+
+
+            .col-wrapper::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .col-wrapper::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .col-wrapper::-webkit-scrollbar-thumb {
+                background: rgba(0, 0, 0, 0.25);
+                border-radius: 3px;
+            }
+
+            .col-wrapper {
+                scrollbar-width: thin;
+                scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+            }
+
+            .col-wrapper::-webkit-scrollbar {
+                display: none;
+            }
+
+            .col-wrapper {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+
+            .title {
+                color: rgba(205, 205, 205, 1);
+                padding: 2.5px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="viewport">
+            <div class="ui-layer">
+                <div class="ui-layer__cat-navigation">
+                    <div class="title">Categories</div>
+                    <div class="btn-custom__background">
+                        <div class="btn-custom__inner">Video</div>
+                    </div>
+                    <div class="btn-custom__background">
+                        <div class="btn-custom__inner">Photography</div>
+                    </div>
+                    <div class="btn-custom__background">
+                        <div class="btn-custom__inner">Events</div>
+                    </div>
+
+                    <div class="pt ui-layer__cat-navigation">
+                        <div class="title">Explore</div>
+                        <div class="btn-custom__background">
+                            <div class="btn-custom__inner">Archive</div>
+                        </div>
+                        <div class="btn-custom__background">
+                            <div class="btn-custom__inner">About</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="title">Contact</div>
+                    <div class="ui-layer__cat-navigation">
+                        <div class="btn-custom__background">
+                            <div class="btn-custom__inner">E-mail</div>
+                        </div>
+                        <div class="btn-custom__background">
+                            <div class="btn-custom__inner">Instagram</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="instractions">© Mariia Kvasnevska</div>
+
+            <div class="instractions__line-x"></div>
+
+            <div class="instractions__line-y"></div>
+
+            <div id="world">
+                <div class="world__inner">
+                    <div class="col-wrapper left-wrapper">
+                        <div class="left">
+                            <div class="world-image">
+                                <img
+                                    src="images/z.webp"
+                                    draggable="false"
+                                />
+
+                                <div class="world-image__desc"></div>
+                            </div>
+
+                            <div class="world-image">
+                                <img
+                                    src="images/x.webp"
+                                    draggable="false"
+                                />
+                            </div>
+
+                            <div class="world-image">
+                                <img
+                                    src="images/м.webp"
+                                    draggable="false"
+                                />
+                            </div>
+
+
+                            <div class="world-image">
+                                <img
+                                    src="images/7.png"
+                                    draggable="false"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-wrapper right-wrapper">
+                        <div class="right">
+                            <div class="world-image">
+                                <img
+                                    src="images/8.png"
+                                    draggable="false"
+                                />
+                            </div>
+
+                            <div class="world-image">
+                                <img
+                                    src="images/2.png"
+                                    draggable="false"
+                                />
+                            </div>
+
+                            <div class="world-image">
+                                <img
+                                    src="images/1.png"
+                                    draggable="false"
+                                />
+                                <div class="world-image__desc"></div>
+                            </div>
+
+                            <div class="world-image">
+                                <img
+                                    src="images/n.webp"
+                                    draggable="false"
+                                />
+                            </div>
+
+                            <div class="world-image">
+                                <img
+                                    src="images/5.png"
+                                    draggable="false"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const images = document.querySelectorAll(".world-image");
+
+            const imageStates = new Map();
+
+            window.addEventListener("load", () => {
+                images.forEach((img) => {
+                    const parent = img.parentElement;
+
+                    const parentWidth = parent.clientWidth;
+
+                    const imgWidth = img.clientWidth;
+
+                    const maxShift = parentWidth - imgWidth - 10;
+
+                    if (maxShift > 0) {
+                        const randomX = Math.random() * maxShift;
+
+                        img.style.left = `${randomX}px`;
+                    }
+                });
             });
 
-            const rects = Array.from(images).map(img => {
-                const rect = img.getBoundingClientRect();
-                return {
-                    img: img,
-                    width: rect.width,
-                    height: rect.height,
-                    centerX: rect.left + rect.width / 2,
-                    centerY: rect.top + rect.height / 2,
-                    isHovered: imageStates.get(img).isHovered
-                };
+            images.forEach((img) => {
+                imageStates.set(img, {
+                    currentX: 0,
+                    currentY: 0,
+
+                    targetX: 0,
+                    targetY: 0,
+
+                    pushX: 0,
+                    pushY: 0,
+
+                    isHovered: false,
+                });
+
+                img.addEventListener("mouseenter", () => {
+                    imageStates.get(img).isHovered = true;
+
+                    img.style.zIndex = 2;
+                });
+
+                img.addEventListener("mousemove", (e) => {
+                    const state = imageStates.get(img);
+
+                    if (!state.isHovered) return;
+
+                    const rect = img.getBoundingClientRect();
+
+                    const centerX = rect.left + rect.width / 2;
+
+                    const centerY = rect.top + rect.height / 2;
+
+                    const offsetX = e.clientX - centerX;
+
+                    const offsetY = e.clientY - centerY;
+
+                    const strength = 0.3;
+
+                    state.targetX = offsetX * strength;
+
+                    state.targetY = offsetY * strength;
+                });
+
+                img.addEventListener("mouseleave", () => {
+                    const state = imageStates.get(img);
+
+                    state.isHovered = false;
+
+                    state.targetX = 0;
+
+                    state.targetY = 0;
+
+                    img.style.zIndex = 1;
+                });
             });
 
-            for (let i = 0; i < rects.length; i++) {
-                for (let j = i + 1; j < rects.length; j++) {
-                    const a = rects[i];
-                    const b = rects[j];
+            function animateMagneticEffect() {
+                images.forEach((img) => {
+                    imageStates.get(img).pushX = 0;
 
-                    const dx = b.centerX - a.centerX;
-                    const dy = b.centerY - a.centerY;
+                    imageStates.get(img).pushY = 0;
+                });
 
-                    const overlapX = (a.width + b.width) / 2 - Math.abs(dx);
-                    const overlapY = (a.height + b.height) / 2 - Math.abs(dy);
+                const rects = Array.from(images).map((img) => {
+                    const rect = img.getBoundingClientRect();
 
-                    if (overlapX > 0 && overlapY > 0) {
-                        const overlap = Math.min(overlapX, overlapY);
+                    return {
+                        img: img,
 
-                        const force = overlap * 3;
+                        width: rect.width + 5,
 
-                        let angle = Math.atan2(dy, dx);
-                        if (dx === 0 && dy === 0) angle = Math.random() * Math.PI * 2;
+                        height: rect.height + 5,
 
-                        const forceX = Math.cos(angle) * force;
-                        const forceY = Math.sin(angle) * force;
+                        centerX: rect.left + rect.width / 2,
 
-                        const stateA = imageStates.get(a.img);
-                        const stateB = imageStates.get(b.img);
+                        centerY: rect.top + rect.height / 2,
 
-                        if (!a.isHovered) {
-                            stateA.pushX -= forceX;
-                            stateA.pushY -= forceY;
-                        }
-                        if (!b.isHovered) {
-                            stateB.pushX += forceX;
-                            stateB.pushY += forceY;
+                        isHovered: imageStates.get(img).isHovered,
+                    };
+                });
+
+                for (let i = 0; i < rects.length; i++) {
+                    for (let j = i + 1; j < rects.length; j++) {
+                        const a = rects[i];
+
+                        const b = rects[j];
+
+                        const dx = b.centerX - a.centerX;
+
+                        const dy = b.centerY - a.centerY;
+
+                        const overlapX = (a.width + b.width) / 2 - Math.abs(dx);
+
+                        const overlapY =
+                            (a.height + b.height) / 2 - Math.abs(dy);
+
+                        if (overlapX > 0 && overlapY > 0) {
+                            const overlap = Math.min(overlapX, overlapY);
+
+                            const force = overlap * 4;
+
+                            let angle = Math.atan2(dy, dx);
+
+                            if (dx === 0 && dy === 0)
+                                angle = Math.random() * Math.PI * 2;
+
+                            const forceX = Math.cos(angle) * force;
+
+                            const forceY = Math.sin(angle) * force;
+
+                            const stateA = imageStates.get(a.img);
+
+                            const stateB = imageStates.get(b.img);
+
+                            if (!a.isHovered) {
+                                stateA.pushX -= forceX;
+
+                                stateA.pushY -= forceY;
+                            }
+
+                            if (!b.isHovered) {
+                                stateB.pushX += forceX;
+
+                                stateB.pushY += forceY;
+                            }
                         }
                     }
                 }
+
+                images.forEach((img) => {
+                    const state = imageStates.get(img);
+
+                    let finalTargetX = state.targetX + state.pushX;
+
+                    let finalTargetY = state.targetY + state.pushY;
+
+                    let dx = finalTargetX - state.currentX;
+
+                    let dy = finalTargetY - state.currentY;
+
+                    if (Math.abs(dx) > 0.05 || Math.abs(dy) > 0.05) {
+                        state.currentX += dx * 0.1;
+
+                        state.currentY += dy * 0.1;
+
+                        img.style.transform = `translate(${state.currentX}px, ${state.currentY}px)`;
+                    } else if (
+                        state.currentX !== finalTargetX ||
+                        state.currentY !== finalTargetY
+                    ) {
+                        state.currentX = finalTargetX;
+
+                        state.currentY = finalTargetY;
+
+                        img.style.transform = `translate(${state.currentX}px, ${state.currentY}px)`;
+                    }
+                });
+
+                requestAnimationFrame(animateMagneticEffect);
             }
 
-            images.forEach(img => {
-                const state = imageStates.get(img);
+            animateMagneticEffect();
 
-                let finalTargetX = state.targetX + state.pushX;
-                let finalTargetY = state.targetY + state.pushY;
+            const leftWrapper = document.querySelector(".left-wrapper");
+            const rightWrapper = document.querySelector(".right-wrapper");
 
-                let dx = finalTargetX - state.currentX;
-                let dy = finalTargetY - state.currentY;
+            let lastLeftScroll = leftWrapper.scrollTop;
+            let lastRightScroll = rightWrapper.scrollTop;
+            let isSyncing = false;
 
-                if (Math.abs(dx) > 0.05 || Math.abs(dy) > 0.05) {
-                    state.currentX += dx * 0.1;
-                    state.currentY += dy * 0.1;
-                    img.style.transform = `translate(${state.currentX}px, ${state.currentY}px)`;
-                }
-                else if (state.currentX !== finalTargetX || state.currentY !== finalTargetY) {
-                    state.currentX = finalTargetX;
-                    state.currentY = finalTargetY;
-                    img.style.transform = `translate(${state.currentX}px, ${state.currentY}px)`;
-                }
+            const scrollSpeedFactor = 0.1;
+
+            const handleScroll = (source, target, lastScrollKey) => {
+                if (isSyncing) return;
+                isSyncing = true;
+
+                const currentScroll = source.scrollTop;
+                const delta = currentScroll - (lastScrollKey === 'left' ? lastLeftScroll : lastRightScroll);
+
+                target.scrollTop -= delta * scrollSpeedFactor;
+
+                lastLeftScroll = leftWrapper.scrollTop;
+                lastRightScroll = rightWrapper.scrollTop;
+
+                requestAnimationFrame(() => {
+                    isSyncing = false;
+                });
+            };
+
+            leftWrapper.addEventListener("scroll", () => {
+                handleScroll(leftWrapper, rightWrapper, 'left');
+            }, { passive: true });
+
+            rightWrapper.addEventListener("scroll", () => {
+                handleScroll(rightWrapper, leftWrapper, 'right');
+            }, { passive: true });
+
+            const leftCol = document.querySelector(".left");
+            const rightCol = document.querySelector(".right");
+
+            leftCol.addEventListener("mouseenter", () => {
+                leftWrapper.style.zIndex = "2";
+                rightWrapper.style.zIndex = "1";
             });
 
-            requestAnimationFrame(animateMagneticEffect);
-        }
-        animateMagneticEffect();
-    </script>
-</body>
+            rightCol.addEventListener("mouseenter", () => {
+                rightWrapper.style.zIndex = "2";
+                leftWrapper.style.zIndex = "1";
+            });
+        </script>
+    </body>
 </html>
