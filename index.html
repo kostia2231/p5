@@ -20,14 +20,14 @@
                 overflow: hidden;
                 background-color: #ffffff;
                 font-family: "fOnT", system-ui, Helvetica, sans-serif;
-                font-size: 11px;
+                font-size: 10px;
                 font-weight: 500;
                 color: black;
             }
 
             .logo { font-weight: 500; }
 
-            img { height: 47vh !important; }
+            img { height: 47vh !important;}
 
             #viewport {
                 width: 100%;
@@ -68,7 +68,7 @@
 
             .left-wrapper { z-index: 1; direction: rtl; }
             .right-wrapper { z-index: 1; direction: ltr; }
-            .title-grey { color: rgba(200, 200, 200, 1); }
+            .title-grey { color: rgba(180, 180, 180, 1); }
 
             .left {
                 direction: ltr;
@@ -104,7 +104,6 @@
                 .left { width: 100%; margin: 0; }
                 .right { width: 100%; margin: 0; }
 
-                /* Заменили :hover на .is-active для мобильных */
                 .world-image.is-active > img { scale: 1 !important; }
             }
 
@@ -124,7 +123,6 @@
                 flex-direction: column;
             }
 
-            /* Заменили все :hover на класс .is-active */
             .world-image.is-active > img { scale: 1.1; }
             .world-image > img { transition: scale 0.2s linear; }
 
@@ -140,8 +138,8 @@
                 pointer-events: none;
             }
 
-            .ui-layer__cat-navigation { display: flex; flex-direction: column; gap: 2.5px; }
-            .ui-layer__cat-navigation__inline { display: flex; flex-direction: row; gap: 2.5px; }
+            .ui-layer__cat-navigation { display: flex; flex-direction: column; gap: 5px; }
+            .ui-layer__cat-navigation__inline { display: flex; flex-direction: row; gap: 5px; }
             .ui-layer__cat-navigation__inline > div { height: fit-content; pointer-events: auto; }
 
             .world-image__desc {
@@ -154,7 +152,6 @@
                 transition: transform 0.2s ease, opacity 0.2s ease, visibility 0.2s;
             }
 
-            /* Заменили :hover на класс .is-active */
             .world-image.is-active .world-image__desc .btn-custom__background {
                 visibility: visible; opacity: 1; transform: translateY(0); pointer-events: auto;
             }
@@ -166,17 +163,28 @@
             .world-image.is-active .world-image__desc .btn-custom__background:nth-child(5) { transition-delay: 0.4s; }
 
             .btn-custom__background {
-                background-color: rgba(245, 245, 245, 0.1); width: fit-content; padding: 2.5px;
+                width: fit-content;
+                /*background-color: rgba(245, 245, 245, 0.1); padding: 2.5px;
                 backdrop-filter: blur(5px); cursor: pointer; pointer-events: auto;
-                mix-blend-mode: difference;
+                mix-blend-mode: difference;*/
             }
 
-            .btn-custom__inner { background-color: rgba(245, 245, 245, 1); padding: 5px 10px; }
+            .btn-custom__inner { background-color: rgba(180, 180, 180, 0.1); padding: 5px 10px;
+                backdrop-filter: blur(10px);
+
+                pointer-events: auto;
+                cursor: pointer;
+
+                border-radius: 2px;
+            }
+            .btn-custom__inner:hover{
+                background-color: rgba(180, 180, 180, 1)
+            }
 
             .instractions {
                 padding: 5px; position: fixed; top: 50%; left: 50%;
                 transform: translate(-50%, -50%); z-index: 10;
-                pointer-events: none; color: rgba(200, 200, 200, 1);
+                pointer-events: none; color: rgba(180, 180, 180, 1);
             }
 
             .instractions:hover { color: black; }
@@ -191,14 +199,60 @@
                 z-index: 0; pointer-events: none; width: 100%; background-color: rgba(245, 245, 245, 1); height: 1px;
             }
 
-            .title { color: rgba(205, 205, 205, 1); padding: 2.5px; }
+            .title { color: rgba(180, 180, 180, 1); padding: 2.5px; }
 
             .pt { padding-top: 5px; }
+
+            .information {
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 100;
+                padding: 5px;
+                font-size: 58px;
+
+                height: 100vh;
+                overflow-y: auto;
+                box-sizing: border-box;
+                overscroll-behavior: contain;
+
+                width: 100vw;
+                text-align: left;
+            }
+            .information-wrapper{
+                background-color: rgba(255, 255, 255, 0.666);
+                height: 100vh;
+                width: 100vw;
+
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 101;
+
+                display: none;
+            }
         </style>
     </head>
 
     <body>
         <div id="viewport">
+            <div class="information-wrapper">
+                <div id="information" class="information">
+                    <div>
+                        Creative Producer, Stylist, Art Director.
+                        <br>
+                        <br>
+                        As a stylist and costume designer, she has worked on campaigns and lookbooks ( e-commerce) featured in Vogue UA, Elle UA, 10 Magazines DE, and Kaltblut. Her portfolio includes commercial projects for BMW and various music videos. She worked with brands such as Jacquemus, Mugler, Alexander Wang, Coperni, Stella McCartney, Proenza Schouler, Isabel Marant, Ami Paris, and MISBHV, alongside Ukrainian labels Paskal, Gudu and so on. She also works extensively with jewelry brands, including Panconesi, Completedworks, La2l, and Rimmart.
+                        <br>
+                        <br>
+                        Her production experience covers a wide range of events, from launching educational courses to organizing art exhibitions, including her work as executive producer for the Poligon Project—a community and art exhibition for emerging Ukrainian artists. Currently based in Berlin, she works in the retail sector, bringing expertise in offline marketing and visual merchandising to the management of multiple retail locations, focusing on the intersection of brand identity and sales performance.
+                        <br>
+                        <br>
+                        Her visual language is shaped by two distinct sources of inspiration: a lifelong background in movement and dance, which informs how she anchors imagery through the body, and the raw, rebellious energy of the Ukrainian youth cultural scene.
+                    </div>
+                </div>
+            </div>
+
             <div class="ui-layer">
                 <div class="ui-layer__cat-navigation">
                     <div class="title">Categories</div>
@@ -209,11 +263,11 @@
                     <div class="pt ui-layer__cat-navigation">
                         <div class="title">Explore</div>
                         <div class="btn-custom__background"><div class="btn-custom__inner">Archive</div></div>
-                        <div class="btn-custom__background"><div class="btn-custom__inner">Information</div></div>
+                        <div id="information-btn" class="btn-custom__background"><div class="btn-custom__inner">Information</div></div>
                     </div>
                 </div>
 
-                <div>
+                <div class="ui-layer__cat-navigation">
                     <div class="title">Contact</div>
                     <div class="ui-layer__cat-navigation">
                         <div class="btn-custom__background"><div class="btn-custom__inner">E-mail</div></div>
@@ -224,6 +278,7 @@
 
             <div class="instractions">© Mariia Kvasnevska</div>
             <div class="instractions__line-x"></div>
+            <!--<div class="instractions__line-y"></div>-->
 
             <div id="world">
                 <div class="world__inner">
@@ -256,6 +311,35 @@
         </div>
 
         <script>
+        const informationBtn = document.getElementById("information-btn");
+        const informationBlock = document.getElementById("information");
+        const informationWrapper = document.querySelector(".information-wrapper");
+
+        let lastInfoScroll = 0;
+
+        informationBlock.addEventListener("click", () => {
+            informationWrapper.style.display = "none";
+        });
+
+        informationBtn.addEventListener("click", () => {
+            informationWrapper.style.display = "block";
+            lastInfoScroll = informationBlock.scrollTop;
+        });
+
+        informationBlock.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
+
+        informationBlock.addEventListener("scroll", () => {
+            const currentInfoScroll = informationBlock.scrollTop;
+            const delta = currentInfoScroll - lastInfoScroll;
+
+            leftWrapper.scrollTop += delta * 0.5;
+            rightWrapper.scrollTop -= delta * 0.5;
+
+            lastInfoScroll = currentInfoScroll;
+        }, { passive: true });
+
             const imageStates = new WeakMap();
             const imagesList = [];
 
@@ -291,9 +375,20 @@
                 el.addEventListener("mousemove", (e) => {
                     const state = imageStates.get(el);
                     if (!state.isHovered) return;
+
+                    const groupId = el.getAttribute('data-id');
                     const rect = el.getBoundingClientRect();
-                    state.targetX = (e.clientX - (rect.left + rect.width / 2)) * 0.3;
-                    state.targetY = (e.clientY - (rect.top + rect.height / 2)) * 0.3;
+
+                    const newTargetX = (e.clientX - (rect.left + rect.width / 2)) * 0.3;
+                    const newTargetY = (e.clientY - (rect.top + rect.height / 2)) * 0.3;
+
+                    document.querySelectorAll(`.world-image[data-id="${groupId}"]`).forEach(node => {
+                        if (imageStates.has(node)) {
+                            const nodeState = imageStates.get(node);
+                            nodeState.targetX = newTargetX;
+                            nodeState.targetY = newTargetY;
+                        }
+                    });
                 });
 
                 el.addEventListener("mouseleave", () => {
@@ -396,6 +491,7 @@
 
             function setupInfiniteScroll(wrapper, grid) {
                 const originalItems = Array.from(grid.querySelectorAll(".world-image"));
+                const firstCloneSet = [];
 
                 originalItems.forEach((item, index) => {
                     item.setAttribute('data-id', wrapper.className.split(' ')[1] + '-' + index);
@@ -405,18 +501,22 @@
                     initImage(item);
                 });
 
-                function appendCloneSet() {
-                    originalItems.forEach((item) => {
-                        const clone = item.cloneNode(true);
-                        grid.appendChild(clone);
-                        initImage(clone);
-                    });
-                }
+                originalItems.forEach((item) => {
+                    const clone = item.cloneNode(true);
+                    grid.appendChild(clone);
+                    initImage(clone);
+                    firstCloneSet.push(clone);
+                });
 
-                appendCloneSet();
-                appendCloneSet();
+                originalItems.forEach((item) => {
+                    const clone = item.cloneNode(true);
+                    grid.appendChild(clone);
+                    initImage(clone);
+                });
 
-                return grid.scrollHeight / 3;
+                const exactHeight = firstCloneSet[0].offsetTop - originalItems[0].offsetTop;
+
+                return exactHeight;
             }
 
             let lastLeftScroll  = 0;
