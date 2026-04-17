@@ -28,7 +28,7 @@
             letter-spacing: .01em;
         }
         img {
-            height: 45vh;
+            height: 46vh;
             display: block;
         }
         #viewport {
@@ -113,7 +113,6 @@
             filter: none;
         }
 
-        /* UI  */
         .ui-layer {
             position: fixed;
             top: 0;
@@ -138,8 +137,6 @@
             box-sizing: border-box;
             cursor: pointer;
             color: #292524;
-            /*color: white;*/
-            /*mix-blend-mode: difference;*/
 
             font-weight: 300;
         }
@@ -151,7 +148,6 @@
             align-items: center;
             margin-inline: auto;
 
-            background-color: rgba(255, 60, 0, 0);
             transition: background-color 0.3s cubic-bezier(.77,0,.175,1);
         }
         .btn-custom__background {
@@ -164,7 +160,7 @@
             padding-left: 15px;
             padding-right: 15px;
 
-            background-color: rgba(255, 60, 0, 1);
+            background-color: #F61D3D;
         }
         .btn-custom__inner {
             color: #292524;
@@ -178,7 +174,6 @@
 
             cursor: pointer;
             display: flex;
-            /*mix-blend-mode: difference;*/
         }
         .divider {
             padding-top: 5px;
@@ -191,6 +186,9 @@
         .title {
             color: #292524;
             font-weight: 300;
+            /*background-color: #F61D3D;*/
+            /*background-color: #FFD5E9;*/
+            /*background-color: #F5E1A4;*/
         }
         .information {
             position: fixed;
@@ -210,16 +208,20 @@
             overscroll-behavior: contain;
         }
         .information-wrapper {
-            background-color: rgba(255, 60, 0, 0.9);
+            /*background-color: rgba(246, 29, 61, 1);*/
+            background-color: transparent;
 
             position: fixed;
             inset: 0;
             z-index: 100;
+
             height: 100vh;
             height: 100dvh;
             width: 100vw;
+
             visibility: hidden;
             opacity: 0;
+
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
         .information-wrapper.is-visible {
@@ -239,8 +241,6 @@
         }
         .cursor-image__desc{
             font-weight: 300;
-
-            /*background-color: rgba(246, 64, 46, 1);*/
         }
         .devider__x{
             height: 1px;
@@ -250,14 +250,20 @@
             margin-top: 5px;
             margin-bottom: 5px;
         }
-        .cursor-image__desc__bg{
-            /*background-color: rgba(246, 64, 46, 1);*/
-        }
         .pb{
             padding-bottom: 5px;
         }
         .cursor-image__desc__text{
             color: #292524;
+        }
+        #info-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -265,6 +271,8 @@
 <body>
     <div id="viewport">
         <div class="information-wrapper">
+            <canvas id="info-background"></canvas>
+
             <div id="information" class="information">
                 <div>
                     Creative Producer, Stylist, Art Director.
@@ -324,13 +332,12 @@
             <div class="world__inner">
                 <div class="col-wrapper left-wrapper">
                     <div class="left">
-                        <div class="world-image"><img src="images/2.png" draggable="false" alt="Work 5" /></div>
-                        <div class="world-image"><img src="images/qqq.jpg" draggable="false" alt="Work 1" /></div>
                         <div class="world-image"><img src="images/1.png" draggable="false" alt="Work 7" /></div>
+                        <div class="world-image"><img src="images/n.webp" draggable="false" alt="Work 8" /></div>
                         <div class="world-image"><img src="images/z.webp" draggable="false" alt="Work 2" /></div>
                         <div class="world-image"><img src="images/x.webp" draggable="false" alt="Work 1" /></div>
-                        <div class="world-image"><img src="images/м.webp" draggable="false" alt="Work 3" /></div>
                         <div class="world-image"><img src="images/7.png" draggable="false" alt="Work 4" /></div>
+                        <div class="world-image"><img src="images/8.png" draggable="false" alt="Work 6" /></div>
                     </div>
                 </div>
 
@@ -339,9 +346,9 @@
                         <div class="world-image"><img src="images/zxc.gif" draggable="false" alt="Work 5" /></div>
                         <div class="world-image"><img src="images/xxz.gif" draggable="false" alt="Work 2" /></div>
                         <div class="world-image"><img src="images/mmmm.JPG" draggable="false" alt="Work 6" /></div>
-                        <div class="world-image"><img src="images/8.png" draggable="false" alt="Work 6" /></div>
-                        <div class="world-image"><img src="images/n.webp" draggable="false" alt="Work 8" /></div>
-                        <div class="world-image"><img src="images/5.png" draggable="false" alt="Work 9" /></div>
+                        <div class="world-image"><img src="images/se.gif" draggable="false" alt="Work 6" /></div>
+                        <div class="world-image"><img src="images/vv.JPG" draggable="false" alt="Work 8" /></div>
+                        <div class="world-image"><img src="images/qqq.jpg" draggable="false" alt="Work 1" /></div>
                     </div>
                 </div>
             </div>
@@ -349,6 +356,9 @@
     </div>
 
     <script>
+            const infoCanvas = document.getElementById('info-background');
+            const ictx = infoCanvas.getContext('2d');
+
             const $ = query => document.querySelector(query);
             const $$ = query => document.querySelectorAll(query);
 
@@ -378,14 +388,6 @@
             infoBtn.onclick = () => {
                 infoWrap.classList.add("is-visible");
                 isInfoOpen = true;
-                lastInfoScroll = infoBlock.scrollTop;
-            };
-
-            infoBlock.onscroll = () => {
-                if (!isInfoOpen) return;
-                const delta = infoBlock.scrollTop - lastInfoScroll;
-                lWrap.scrollTop += delta * 0.5;
-                rWrap.scrollTop -= delta * 0.5;
                 lastInfoScroll = infoBlock.scrollTop;
             };
 
@@ -534,6 +536,34 @@
 
                 lWrap.addEventListener("scroll", (e) => handleScroll(e, true), { passive: true });
                 rWrap.addEventListener("scroll", (e) => handleScroll(e, false), { passive: true });
+            });
+
+            function drawGradient() {
+                const cx = infoCanvas.width / 2;
+                const cy = infoCanvas.height / 2;
+
+                const radius = Math.max(infoCanvas.width, infoCanvas.height) / 1;
+                const gradient = ictx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+
+                gradient.addColorStop(0, "#F61D3D");
+                gradient.addColorStop(0.1, "#F61D3D");
+                gradient.addColorStop(0.2, "#F61D3D");
+                gradient.addColorStop(1, "#F61D3D");
+
+                ictx.fillStyle = gradient;
+                ictx.fillRect(0, 0, infoCanvas.width, infoCanvas.height);
+            }
+
+            function resizeCanvas() {
+                infoCanvas.width = window.innerWidth;
+                infoCanvas.height = window.innerHeight;
+                drawGradient();
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+
+            infoBtn.addEventListener('click', () => {
+                resizeCanvas();
             });
         </script>
     </body>
