@@ -1,594 +1,540 @@
 <!doctype html>
 <html lang="ru">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>MASHA DEV</title>
-        <style>
-            @font-face {
-                font-family: "fOnT";
-                src: url("font/KTF2101-Bold.otf") format("opentype");
-                font-weight: normal;
-                font-style: normal;
-            }
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mariia Kvasnevska</title>
+    <style>
+        @font-face {
+            font-family: "fOnT";
+            src: url("font/GT-Alpina-Standard-Light-Trial.otf") format("opentype");
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
 
-            body, html {
-                margin: 0;
-                padding: 0;
-                width: 100vw;
-                height: 100vh;
-                overflow: hidden;
-                background-color: #ffffff;
-                font-family: "fOnT", system-ui, Helvetica, sans-serif;
-                font-size: 10px;
-                font-weight: 500;
-                color: black;
-            }
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
 
-            .logo { font-weight: 500; }
+            overflow: hidden;
+            background-color: white;
+            font-family: system-ui, Helvetica, sans-serif;
 
-            img { height: 47vh !important;}
+            font-weight: 500;
+            color: #292524;
+            font-size: 16px;
+            line-height: 1.1;
+            letter-spacing: .01em;
+        }
+        img {
+            height: 45vh;
+            display: block;
+        }
+        #viewport {
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            position: relative;
+            cursor: default;
+            overflow: hidden;
+        }
+        #world, .world__inner, .col-wrapper {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            inset: 0;
+        }
+        .col-wrapper {
+            overflow-y: auto;
+            overflow-x: hidden;
+            pointer-events: none;
+            scrollbar-width: none;
+            overscroll-behavior: none;
+        }
+        .col-wrapper::-webkit-scrollbar { display: none; }
 
-            #viewport {
-                width: 100%;
-                height: 100vh;
-                position: relative;
-                cursor: default;
-                overflow: hidden;
-            }
+        .left-wrapper { z-index: 1; }
+        .right-wrapper { z-index: 1; }
 
-            #viewport:active { cursor: default; }
+        .left, .right {
+            width: 50%;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 80px;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .right { margin-left: 50%; }
 
-            #world {
-                position: absolute;
-                inset: 0;
-                will-change: transform;
-                width: 100%;
-                overflow: hidden;
-            }
+        .world-image {
+            position: relative;
+            user-select: none;
+            -webkit-user-drag: none;
+            cursor: pointer;
+            height: fit-content;
+            width: fit-content;
+            display: flex;
+            flex-direction: column;
+            z-index: 1;
+        }
+        .image-desc {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            color: rgba(5, 5, 5, 1);
+            z-index: -1;
+        }
+        .world-image img {
+            transition: filter 0.3s ease;
+        }
+        .world-image.is-active img {
+            filter: opacity(0.1);
+        }
 
-            .world__inner {
-                position: relative;
-                width: 100%;
-                height: 100%;
-            }
+        #cursor-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 9;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            will-change: transform;
+        }
+        #cursor-image.visible {
+            opacity: 1;
+        }
+        #cursor-image img {
+            display: block;
+            box-shadow: none;
+            filter: none;
+        }
 
-            .col-wrapper {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                overflow-y: auto;
-                overflow-x: hidden;
-                pointer-events: none;
-                scrollbar-gutter: stable;
-                overscroll-behavior: none;
-            }
+        /* UI  */
+        .ui-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            z-index: 90;
+            padding: 5px;
+            text-align: center;
+        }
+        .ui-layer__bottom {
+            position: fixed;
+            bottom: 0;
+            width: 100vw;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 5px;
+            z-index: 90;
+            padding: 5px;
+            box-sizing: border-box;
+            cursor: pointer;
+            color: #292524;
+            /*color: white;*/
+            /*mix-blend-mode: difference;*/
 
-            .left-wrapper { z-index: 1; direction: rtl; }
-            .right-wrapper { z-index: 1; direction: ltr; }
-            .title-grey { color: rgba(180, 180, 180, 1); }
+            font-weight: 300;
+        }
+        .ui-layer__cat-navigation {
+            display: flex;
+            flex-direction: row;
+            gap: 5px;
+            justify-content: center;
+            align-items: center;
+            margin-inline: auto;
 
-            .left {
-                direction: ltr;
-                width: 50%;
-                margin-right: 50%;
-                pointer-events: auto;
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-                padding: 5px;
-                box-sizing: border-box;
-            }
+            background-color: rgba(255, 60, 0, 0);
+            transition: background-color 0.3s cubic-bezier(.77,0,.175,1);
+        }
+        .btn-custom__background {
+            width: fit-content;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: color 0.3s cubic-bezier(.77,0,.175,1), padding 0.3s linear;
+        }
+        .btn-custom__background:hover {
+            padding-left: 15px;
+            padding-right: 15px;
 
-            .right {
-                width: 50%;
-                margin-left: 50%;
-                pointer-events: auto;
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-                padding: 5px;
-                box-sizing: border-box;
-            }
+            background-color: rgba(255, 60, 0, 1);
+        }
+        .btn-custom__inner {
+            color: #292524;
+        }
+        .instructions {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
 
-            @media (pointer: coarse), (max-width: 1024px) {
-                .col-wrapper {
-                    width: 50%;
-                    pointer-events: auto;
-                }
-                .left-wrapper { left: 0; direction: ltr; }
-                .right-wrapper { left: 50%; }
+            cursor: pointer;
+            display: flex;
+            /*mix-blend-mode: difference;*/
+        }
+        .divider {
+            padding-top: 5px;
+            padding-bottom: 5px;
+            width: 1px;
+            height: 100%;
+            background-color: #292524;
+            pointer-events: none;
+        }
+        .title {
+            color: #292524;
+            font-weight: 300;
+        }
+        .information {
+            position: fixed;
+            inset: 0;
+            z-index: 99;
+            padding: 5px;
 
-                .left { width: 100%; margin: 0; }
-                .right { width: 100%; margin: 0; }
+            font-size: 66px;
+            font-weight: 300;
 
-                .world-image.is-active > img { scale: 1 !important; }
-            }
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            overflow-y: auto;
+            text-align: left;
+            box-sizing: border-box;
+            overscroll-behavior: contain;
+        }
+        .information-wrapper {
+            background-color: rgba(255, 60, 0, 0.9);
 
-            .col-wrapper::-webkit-scrollbar { display: none; }
-            .col-wrapper { -ms-overflow-style: none; scrollbar-width: none; }
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .information-wrapper.is-visible {
+            visibility: visible;
+            opacity: 1;
+        }
+        .pt{
+            padding-top: 5px;
+        }
+        .cursor-image__desc__h{
+            color: #292524;
+            font-weight: 500;
 
-            .world-image {
-                position: relative;
-                user-select: none;
-                -webkit-user-drag: none;
-                will-change: transform, z-index;
-                cursor: pointer;
-                z-index: 1;
-                height: fit-content;
-                width: fit-content;
-                display: flex;
-                flex-direction: column;
-            }
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+        .cursor-image__desc{
+            font-weight: 300;
 
-            .world-image.is-active > img { scale: 1.1; }
-            .world-image > img { transition: scale 0.2s linear; }
+            /*background-color: rgba(246, 64, 46, 1);*/
+        }
+        .devider__x{
+            height: 1px;
+            background-color: #292524;
+            width: 100%;
 
-            .ui-layer {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                z-index: 3;
-                padding: 5px;
-                pointer-events: none;
-            }
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+        .cursor-image__desc__bg{
+            /*background-color: rgba(246, 64, 46, 1);*/
+        }
+        .pb{
+            padding-bottom: 5px;
+        }
+        .cursor-image__desc__text{
+            color: #292524;
+        }
+    </style>
+</head>
 
-            .ui-layer__cat-navigation { display: flex; flex-direction: column; gap: 5px; }
-            .ui-layer__cat-navigation__inline { display: flex; flex-direction: row; gap: 5px; }
-            .ui-layer__cat-navigation__inline > div { height: fit-content; pointer-events: auto; }
-
-            .world-image__desc {
-                z-index: 2; display: flex; gap: 3px; position: absolute;
-                left: -10px; bottom: -17px; pointer-events: none; white-space: nowrap;
-            }
-
-            .world-image__desc .btn-custom__background {
-                visibility: hidden; opacity: 0; transform: translateY(15px);
-                transition: transform 0.2s ease, opacity 0.2s ease, visibility 0.2s;
-            }
-
-            .world-image.is-active .world-image__desc .btn-custom__background {
-                visibility: visible; opacity: 1; transform: translateY(0); pointer-events: auto;
-            }
-
-            .world-image.is-active .world-image__desc .btn-custom__background:nth-child(1) { transition-delay: 0s; }
-            .world-image.is-active .world-image__desc .btn-custom__background:nth-child(2) { transition-delay: 0.1s; }
-            .world-image.is-active .world-image__desc .btn-custom__background:nth-child(3) { transition-delay: 0.2s; }
-            .world-image.is-active .world-image__desc .btn-custom__background:nth-child(4) { transition-delay: 0.3s; }
-            .world-image.is-active .world-image__desc .btn-custom__background:nth-child(5) { transition-delay: 0.4s; }
-
-            .btn-custom__background {
-                width: fit-content;
-                /*background-color: rgba(245, 245, 245, 0.1); padding: 2.5px;
-                backdrop-filter: blur(5px); cursor: pointer; pointer-events: auto;
-                mix-blend-mode: difference;*/
-            }
-
-            .btn-custom__inner { background-color: rgba(180, 180, 180, 0.1); padding: 5px 10px;
-                backdrop-filter: blur(10px);
-
-                pointer-events: auto;
-                cursor: pointer;
-
-                border-radius: 2px;
-            }
-            .btn-custom__inner:hover{
-                background-color: rgba(180, 180, 180, 1)
-            }
-
-            .instractions {
-                padding: 5px; position: fixed; top: 50%; left: 50%;
-                transform: translate(-50%, -50%); z-index: 10;
-                pointer-events: none; color: rgba(180, 180, 180, 1);
-            }
-
-            .instractions:hover { color: black; }
-
-            .instractions__line-x {
-                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                z-index: 0; pointer-events: none; width: 1px; background-color: rgba(245, 245, 245, 1); height: 100%;
-            }
-
-            .instractions__line-y {
-                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                z-index: 0; pointer-events: none; width: 100%; background-color: rgba(245, 245, 245, 1); height: 1px;
-            }
-
-            .title { color: rgba(180, 180, 180, 1); padding: 2.5px; }
-
-            .pt { padding-top: 5px; }
-
-            .information {
-                position: fixed;
-                top: 0;
-                left: 0;
-                z-index: 100;
-                padding: 5px;
-                font-size: 58px;
-
-                height: 100vh;
-                overflow-y: auto;
-                box-sizing: border-box;
-                overscroll-behavior: contain;
-
-                width: 100vw;
-                text-align: left;
-            }
-            .information-wrapper{
-                background-color: rgba(255, 255, 255, 0.666);
-                height: 100vh;
-                width: 100vw;
-
-                position: fixed;
-                top: 0;
-                left: 0;
-                z-index: 101;
-
-                display: none;
-            }
-        </style>
-    </head>
-
-    <body>
-        <div id="viewport">
-            <div class="information-wrapper">
-                <div id="information" class="information">
-                    <div>
-                        Creative Producer, Stylist, Art Director.
-                        <br>
-                        <br>
-                        As a stylist and costume designer, she has worked on campaigns and lookbooks ( e-commerce) featured in Vogue UA, Elle UA, 10 Magazines DE, and Kaltblut. Her portfolio includes commercial projects for BMW and various music videos. She worked with brands such as Jacquemus, Mugler, Alexander Wang, Coperni, Stella McCartney, Proenza Schouler, Isabel Marant, Ami Paris, and MISBHV, alongside Ukrainian labels Paskal, Gudu and so on. She also works extensively with jewelry brands, including Panconesi, Completedworks, La2l, and Rimmart.
-                        <br>
-                        <br>
-                        Her production experience covers a wide range of events, from launching educational courses to organizing art exhibitions, including her work as executive producer for the Poligon Project—a community and art exhibition for emerging Ukrainian artists. Currently based in Berlin, she works in the retail sector, bringing expertise in offline marketing and visual merchandising to the management of multiple retail locations, focusing on the intersection of brand identity and sales performance.
-                        <br>
-                        <br>
-                        Her visual language is shaped by two distinct sources of inspiration: a lifelong background in movement and dance, which informs how she anchors imagery through the body, and the raw, rebellious energy of the Ukrainian youth cultural scene.
-                    </div>
-                </div>
-            </div>
-
-            <div class="ui-layer">
-                <div class="ui-layer__cat-navigation">
-                    <div class="title">Categories</div>
-                    <div class="btn-custom__background"><div class="btn-custom__inner">Video</div></div>
-                    <div class="btn-custom__background"><div class="btn-custom__inner">Photography</div></div>
-                    <div class="btn-custom__background"><div class="btn-custom__inner">Exhibitions</div></div>
-
-                    <div class="pt ui-layer__cat-navigation">
-                        <div class="title">Explore</div>
-                        <div class="btn-custom__background"><div class="btn-custom__inner">Archive</div></div>
-                        <div id="information-btn" class="btn-custom__background"><div class="btn-custom__inner">Information</div></div>
-                    </div>
-                </div>
-
-                <div class="ui-layer__cat-navigation">
-                    <div class="title">Contact</div>
-                    <div class="ui-layer__cat-navigation">
-                        <div class="btn-custom__background"><div class="btn-custom__inner">E-mail</div></div>
-                        <div class="btn-custom__background"><div class="btn-custom__inner">Instagram</div></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="instractions">© Mariia Kvasnevska</div>
-            <div class="instractions__line-x"></div>
-            <!--<div class="instractions__line-y"></div>-->
-
-            <div id="world">
-                <div class="world__inner">
-                    <div class="col-wrapper left-wrapper">
-                        <div class="left">
-                            <div class="world-image">
-                                <img src="images/z.webp" draggable="false" />
-                                <div class="world-image__desc"></div>
-                            </div>
-                            <div class="world-image"><img src="images/x.webp" draggable="false" /></div>
-                            <div class="world-image"><img src="images/м.webp" draggable="false" /></div>
-                            <div class="world-image"><img src="images/7.png" draggable="false" /></div>
-                        </div>
-                    </div>
-
-                    <div class="col-wrapper right-wrapper">
-                        <div class="right">
-                            <div class="world-image"><img src="images/8.png" draggable="false" /></div>
-                            <div class="world-image"><img src="images/2.png" draggable="false" /></div>
-                            <div class="world-image">
-                                <img src="images/1.png" draggable="false" />
-                                <div class="world-image__desc"></div>
-                            </div>
-                            <div class="world-image"><img src="images/n.webp" draggable="false" /></div>
-                            <div class="world-image"><img src="images/5.png" draggable="false" /></div>
-                        </div>
-                    </div>
+<body>
+    <div id="viewport">
+        <div class="information-wrapper">
+            <div id="information" class="information">
+                <div>
+                    Creative Producer, Stylist, Art Director.
+                    <br /><br />
+                    As a stylist and costume designer, she has worked on campaigns and lookbooks (E-commerce) featured in Vogue UA, Elle UA, 10 Magazines DE, and Kaltblut. Her portfolio includes commercial projects for BMW and various music videos.
+                    <br><br>
+                    She worked with brands such as Jacquemus, Mugler, Alexander Wang, Coperni, Stella McCartney, Proenza Schouler, Isabel Marant, Ami Paris, and MISBHV, alongside Ukrainian labels Paskal, Gudu and so on. She also works extensively with jewelry brands, including Panconesi, Completedworks, La2l, and Rimmart.
+                    <br /><br />
+                    Her production experience covers a wide range of events, from launching educational courses to organizing art exhibitions, including her work as executive producer for the Poligon Project—a community and art exhibition for emerging Ukrainian artists. Currently based in Berlin, she works in the retail sector, bringing expertise in offline marketing and visual merchandising to the management of multiple retail locations, focusing on the intersection of brand identity and sales performance.<br /><br />
+                    Her visual language is shaped by two distinct sources of inspiration: a lifelong background in movement and dance, which informs how she anchors imagery through the body, and the raw, rebellious energy of the Ukrainian youth cultural scene.
                 </div>
             </div>
         </div>
 
-        <script>
-        const informationBtn = document.getElementById("information-btn");
-        const informationBlock = document.getElementById("information");
-        const informationWrapper = document.querySelector(".information-wrapper");
+        <div id="cursor-image">
+            <img src="" alt="cursor" />
+            <div class="cursor-image__desc">
+                <div class="pt cursor-image__desc__bg">
+                    <div class="cursor-image__desc__h">
+                        <div>Personal Project</div>
+                        <div class="mla">2025</div>
+                    </div>
+                    <div class="devider__x"></div>
+                </div>
+                <div class="cursor-image__desc__text">Art Direction, Production, Set Design</div>
+            </div>
+        </div>
 
-        let lastInfoScroll = 0;
+        <div class="ui-layer">
+            <div></div>
+        </div>
 
-        informationBlock.addEventListener("click", () => {
-            informationWrapper.style.display = "none";
-        });
+        <div class="ui-layer__bottom">
+            <div class="ui-layer__bottom__inner">
+                <span class="btn-custom__background">Instagram</span>,
+                <span class="btn-custom__background">Email</span>
+            </div>
+        </div>
 
-        informationBtn.addEventListener("click", () => {
-            informationWrapper.style.display = "block";
-            lastInfoScroll = informationBlock.scrollTop;
-        });
+        <div class="instructions">
+            <div class="ui-layer__cat-navigation">
+                <div class="title">© Mariia Kvasnevska</div>
+                <div class="divider"></div>
+                <div class="btn-custom__background"><div class="btn-custom__inner">Index</div></div>
+                <div class="divider"></div>
+                <div class="btn-custom__background"><div class="btn-custom__inner">Photography</div></div>
+                <div class="divider"></div>
+                <div class="btn-custom__background"><div class="btn-custom__inner">Video</div></div>
+                <div class="divider"></div>
+                <div class="btn-custom__background"><div class="btn-custom__inner">Events</div></div>
+                <div class="divider"></div>
+                <div id="information-btn" class="btn-custom__background"><div class="btn-custom__inner">About</div></div>
+            </div>
+        </div>
 
-        informationBlock.addEventListener("click", (e) => {
-            e.stopPropagation();
-        });
+        <div id="world">
+            <div class="world__inner">
+                <div class="col-wrapper left-wrapper">
+                    <div class="left">
+                        <div class="world-image"><img src="images/2.png" draggable="false" alt="Work 5" /></div>
+                        <div class="world-image"><img src="images/qqq.jpg" draggable="false" alt="Work 1" /></div>
+                        <div class="world-image"><img src="images/1.png" draggable="false" alt="Work 7" /></div>
+                        <div class="world-image"><img src="images/z.webp" draggable="false" alt="Work 2" /></div>
+                        <div class="world-image"><img src="images/x.webp" draggable="false" alt="Work 1" /></div>
+                        <div class="world-image"><img src="images/м.webp" draggable="false" alt="Work 3" /></div>
+                        <div class="world-image"><img src="images/7.png" draggable="false" alt="Work 4" /></div>
+                    </div>
+                </div>
 
-        informationBlock.addEventListener("scroll", () => {
-            const currentInfoScroll = informationBlock.scrollTop;
-            const delta = currentInfoScroll - lastInfoScroll;
+                <div class="col-wrapper right-wrapper">
+                    <div class="right">
+                        <div class="world-image"><img src="images/zxc.gif" draggable="false" alt="Work 5" /></div>
+                        <div class="world-image"><img src="images/xxz.gif" draggable="false" alt="Work 2" /></div>
+                        <div class="world-image"><img src="images/mmmm.JPG" draggable="false" alt="Work 6" /></div>
+                        <div class="world-image"><img src="images/8.png" draggable="false" alt="Work 6" /></div>
+                        <div class="world-image"><img src="images/n.webp" draggable="false" alt="Work 8" /></div>
+                        <div class="world-image"><img src="images/5.png" draggable="false" alt="Work 9" /></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            leftWrapper.scrollTop += delta * 0.5;
-            rightWrapper.scrollTop -= delta * 0.5;
+    <script>
+            const $ = query => document.querySelector(query);
+            const $$ = query => document.querySelectorAll(query);
 
-            lastInfoScroll = currentInfoScroll;
-        }, { passive: true });
+            const infoBtn = $("#information-btn");
+            const infoBlock = $("#information");
+            const infoWrap = $(".information-wrapper");
+            const cursor = $("#cursor-image");
+            const cursorImg = cursor.querySelector("img");
+            const lWrap = $(".left-wrapper");
+            const rWrap = $(".right-wrapper");
+            const lGrid = $(".left");
+            const rGrid = $(".right");
 
-            const imageStates = new WeakMap();
-            const imagesList = [];
+            let isInfoOpen = false;
+            let activeCol = null;
+            let lastInfoScroll = 0;
 
-            const groupTimeouts = {};
 
-            function initImage(el) {
-                if (imageStates.has(el)) return;
+            infoBlock.onclick = () => {
+                infoWrap.classList.remove("is-visible");
+                isInfoOpen = false;
+                activeCol = null;
+            };
 
-                imagesList.push(el);
-                imageStates.set(el, {
-                    currentX: 0, currentY: 0,
-                    targetX: 0,  targetY: 0,
-                    pushX: 0,    pushY: 0,
-                    isHovered: false,
-                    lastRenderX: null, lastRenderY: null,
-                });
+            infoWrap.onclick = e => e.stopPropagation();
 
-                el.addEventListener("mouseenter", () => {
-                    const groupId = el.getAttribute('data-id');
+            infoBtn.onclick = () => {
+                infoWrap.classList.add("is-visible");
+                isInfoOpen = true;
+                lastInfoScroll = infoBlock.scrollTop;
+            };
 
-                    clearTimeout(groupTimeouts[groupId]);
+            infoBlock.onscroll = () => {
+                if (!isInfoOpen) return;
+                const delta = infoBlock.scrollTop - lastInfoScroll;
+                lWrap.scrollTop += delta * 0.5;
+                rWrap.scrollTop -= delta * 0.5;
+                lastInfoScroll = infoBlock.scrollTop;
+            };
 
-                    document.querySelectorAll(`.world-image[data-id="${groupId}"]`).forEach(node => {
-                        node.classList.add('is-active');
-                        node.style.zIndex = 2;
+            let mx = window.innerWidth / 2, my = window.innerHeight / 2, cx = mx, cy = my;
+            document.addEventListener("mousemove", e => { mx = e.clientX; my = e.clientY; });
 
-                        if (imageStates.has(node)) {
-                            imageStates.get(node).isHovered = true;
+            (function animateCursor() {
+                cx += (mx - cx) * 0.15;
+                cy += (my - cy) * 0.15;
+                cursor.style.transform = `translate3d(${cx}px, ${cy}px, 0) translate(-50%, -50%)`;
+                requestAnimationFrame(animateCursor);
+            })();
+
+            let activeHoverId = null;
+
+            const toggleImageState = (el, isActive) => {
+                if (!el) return;
+
+                const id = el.dataset.id;
+
+                if (isActive) {
+                    $$('.world-image.is-active').forEach(activeNode => {
+                        if (activeNode.dataset.id !== id) {
+                            activeNode.classList.remove('is-active');
                         }
                     });
-                });
 
-                el.addEventListener("mousemove", (e) => {
-                    const state = imageStates.get(el);
-                    if (!state.isHovered) return;
-
-                    const groupId = el.getAttribute('data-id');
-                    const rect = el.getBoundingClientRect();
-
-                    const newTargetX = (e.clientX - (rect.left + rect.width / 2)) * 0.3;
-                    const newTargetY = (e.clientY - (rect.top + rect.height / 2)) * 0.3;
-
-                    document.querySelectorAll(`.world-image[data-id="${groupId}"]`).forEach(node => {
-                        if (imageStates.has(node)) {
-                            const nodeState = imageStates.get(node);
-                            nodeState.targetX = newTargetX;
-                            nodeState.targetY = newTargetY;
-                        }
-                    });
-                });
-
-                el.addEventListener("mouseleave", () => {
-                    const groupId = el.getAttribute('data-id');
-
-                    groupTimeouts[groupId] = setTimeout(() => {
-                        document.querySelectorAll(`.world-image[data-id="${groupId}"]`).forEach(node => {
-                            node.classList.remove('is-active');
-                            node.style.zIndex = 1;
-
-                            if (imageStates.has(node)) {
-                                const state = imageStates.get(node);
-                                state.isHovered = false;
-                                state.targetX = 0;
-                                state.targetY = 0;
-                            }
-                        });
-                    }, 50);
-                });
-            }
-
-            function animateMagneticEffect() {
-                imagesList.forEach(el => {
-                    const s = imageStates.get(el);
-                    s.pushX = 0;
-                    s.pushY = 0;
-                });
-
-                const rects = imagesList.map((el) => {
-                    const rect = el.getBoundingClientRect();
-                    return {
-                        el,
-                        width:    rect.width + 5,
-                        height:   rect.height + 5,
-                        centerX:  rect.left + rect.width / 2,
-                        centerY:  rect.top  + rect.height / 2,
-                        isHovered: imageStates.get(el).isHovered,
-                    };
-                });
-
-                for (let i = 0; i < rects.length; i++) {
-                    for (let j = i + 1; j < rects.length; j++) {
-                        const a = rects[i], b = rects[j];
-                        const dx = b.centerX - a.centerX;
-                        const dy = b.centerY - a.centerY;
-                        const overlapX = (a.width  + b.width)  / 2 - Math.abs(dx);
-                        const overlapY = (a.height + b.height) / 2 - Math.abs(dy);
-
-                        if (overlapX > 0 && overlapY > 0) {
-                            const force = Math.min(overlapX, overlapY) * 1;
-                            let angle = (dx === 0 && dy === 0)
-                                ? Math.random() * Math.PI * 2
-                                : Math.atan2(dy, dx);
-                            const forceX = Math.cos(angle) * force;
-                            const forceY = Math.sin(angle) * force;
-
-                            if (!a.isHovered) { imageStates.get(a.el).pushX -= forceX; imageStates.get(a.el).pushY -= forceY; }
-                            if (!b.isHovered) { imageStates.get(b.el).pushX += forceX; imageStates.get(b.el).pushY += forceY; }
-                        }
-                    }
-                }
-
-                imagesList.forEach((el) => {
-                    const state = imageStates.get(el);
-                    const finalX = state.targetX + state.pushX;
-                    const finalY = state.targetY + state.pushY;
-                    const dx = finalX - state.currentX;
-                    const dy = finalY - state.currentY;
-
-                    if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
-                        state.currentX += dx * 0.1;
-                        state.currentY += dy * 0.1;
+                    if (id) {
+                        $$(`.world-image[data-id="${id}"]`).forEach(n => n.classList.add("is-active"));
                     } else {
-                        state.currentX = finalX;
-                        state.currentY = finalY;
+                        el.classList.add("is-active");
                     }
 
-                    let renderX = Math.round(state.currentX * 100) / 100;
-                    let renderY = Math.round(state.currentY * 100) / 100;
-                    if (Math.abs(renderX) < 0.2) renderX = 0;
-                    if (Math.abs(renderY) < 0.2) renderY = 0;
+                    activeHoverId = id || el;
+                    const newSrc = el.querySelector("img").getAttribute("src");
 
-                    if (state.lastRenderX !== renderX || state.lastRenderY !== renderY) {
-                        el.style.transform = `translate(${renderX}px, ${renderY}px)`;
-                        state.lastRenderX = renderX;
-                        state.lastRenderY = renderY;
+                    if (cursorImg.getAttribute("src") !== newSrc) {
+                        cursorImg.setAttribute("src", newSrc);
                     }
-                });
 
-                requestAnimationFrame(animateMagneticEffect);
-            }
+                    cursor.classList.add("visible");
+                } else {
+                    if (id) {
+                        $$(`.world-image[data-id="${id}"]`).forEach(n => n.classList.remove("is-active"));
+                    } else {
+                        el.classList.remove("is-active");
+                    }
 
-            const leftWrapper  = document.querySelector(".left-wrapper");
-            const rightWrapper = document.querySelector(".right-wrapper");
-            const leftGrid     = document.querySelector(".left");
-            const rightGrid    = document.querySelector(".right");
+                    if (activeHoverId === (id || el)) {
+                        cursor.classList.remove("visible");
+                        activeHoverId = null;
+                    }
+                }
+            };
 
-            let leftOriginalHeight  = 0;
-            let rightOriginalHeight = 0;
+            $("#world").addEventListener("mouseover", e => {
+                const target = e.target.closest(".world-image");
+                if (!target) return;
 
-            function setupInfiniteScroll(wrapper, grid) {
-                const originalItems = Array.from(grid.querySelectorAll(".world-image"));
-                const firstCloneSet = [];
+                const related = e.relatedTarget;
+                if (related && target.contains(related)) return;
 
-                originalItems.forEach((item, index) => {
-                    item.setAttribute('data-id', wrapper.className.split(' ')[1] + '-' + index);
+                toggleImageState(target, true);
+            });
 
-                    const maxShift = grid.clientWidth - item.clientWidth - 10;
-                    if (maxShift > 0) item.style.left = `${Math.random() * maxShift}px`;
-                    initImage(item);
-                });
+            $("#world").addEventListener("mouseout", e => {
+                const target = e.target.closest(".world-image");
+                if (!target) return;
 
-                originalItems.forEach((item) => {
-                    const clone = item.cloneNode(true);
-                    grid.appendChild(clone);
-                    initImage(clone);
-                    firstCloneSet.push(clone);
-                });
+                const related = e.relatedTarget;
+                if (related && target.contains(related)) return;
 
-                originalItems.forEach((item) => {
-                    const clone = item.cloneNode(true);
-                    grid.appendChild(clone);
-                    initImage(clone);
-                });
-
-                const exactHeight = firstCloneSet[0].offsetTop - originalItems[0].offsetTop;
-
-                return exactHeight;
-            }
-
-            let lastLeftScroll  = 0;
-            let lastRightScroll = 0;
-            let isSyncing = false;
-            const scrollSpeedFactor = 0.15;
-
-            function handleScroll(sourceWrapper, targetWrapper, sourceOrigHeight, targetOrigHeight, isLeft) {
-                if (isSyncing) return;
-
-                let currentScroll = sourceWrapper.scrollTop;
-                let lastScroll    = isLeft ? lastLeftScroll : lastRightScroll;
-
-                if (currentScroll < sourceOrigHeight * 0.5) {
-                    sourceWrapper.scrollTop = currentScroll + sourceOrigHeight;
-                    currentScroll += sourceOrigHeight;
-                    lastScroll    += sourceOrigHeight;
-                } else if (currentScroll > sourceOrigHeight * 1.5) {
-                    sourceWrapper.scrollTop = currentScroll - sourceOrigHeight;
-                    currentScroll -= sourceOrigHeight;
-                    lastScroll    -= sourceOrigHeight;
+                if (related && (related.closest('.instructions') || related.closest('.ui-layer__bottom') || related.closest('.ui-layer'))) {
+                    return;
                 }
 
+                toggleImageState(target, false);
+            });
+
+            $$('.instructions, .ui-layer__bottom, .ui-layer').forEach(menu => {
+                menu.addEventListener('mouseleave', e => {
+                    const related = e.relatedTarget;
+                    if (related && (related.closest('.world-image') || related.closest('.instructions') || related.closest('.ui-layer__bottom') || related.closest('.ui-layer'))) {
+                        return;
+                    }
+
+                    if (activeHoverId) {
+                        const activeEl = document.querySelector('.world-image.is-active');
+                        if (activeEl) toggleImageState(activeEl, false);
+                    }
+                });
+            });
+
+
+            let lOrigHeight = 0, rOrigHeight = 0;
+            let lastLScroll = 0, lastRScroll = 0;
+
+            lWrap.addEventListener("mouseenter", () => activeCol = 'left');
+            rWrap.addEventListener("mouseenter", () => activeCol = 'right');
+            lWrap.addEventListener("mouseleave", () => activeCol = null);
+            rWrap.addEventListener("mouseleave", () => activeCol = null);
+
+            lWrap.addEventListener("touchstart", () => activeCol = 'left', {passive: true});
+            rWrap.addEventListener("touchstart", () => activeCol = 'right', {passive: true});
+
+            function handleScroll(e, isLeft) {
+                const src = isLeft ? lWrap : rWrap;
+                const tgt = isLeft ? rWrap : lWrap;
+                const srcOrigH = isLeft ? lOrigHeight : rOrigHeight;
+                const tgtOrigH = isLeft ? rOrigHeight : lOrigHeight;
+
+                let currentScroll = src.scrollTop;
+                let lastScroll = isLeft ? lastLScroll : lastRScroll;
                 const delta = currentScroll - lastScroll;
-                if (isLeft) lastLeftScroll = currentScroll;
-                else        lastRightScroll = currentScroll;
 
-                if (Math.abs(delta) > 0 && Math.abs(delta) < window.innerHeight) {
-                    isSyncing = true;
-                    targetWrapper.scrollTop += delta * scrollSpeedFactor;
-
-                    let targetScroll = targetWrapper.scrollTop;
-                    if (targetScroll < targetOrigHeight * 0.5) {
-                        targetWrapper.scrollTop = targetScroll + targetOrigHeight;
-                        targetScroll += targetOrigHeight;
-                    } else if (targetScroll > targetOrigHeight * 1.5) {
-                        targetWrapper.scrollTop = targetScroll - targetOrigHeight;
-                        targetScroll -= targetOrigHeight;
-                    }
-
-                    if (isLeft) lastRightScroll = targetWrapper.scrollTop;
-                    else        lastLeftScroll  = targetWrapper.scrollTop;
-
-                    requestAnimationFrame(() => { isSyncing = false; });
+                if (currentScroll < srcOrigH * 0.5) {
+                    currentScroll += srcOrigH;
+                    src.scrollTop = currentScroll;
+                } else if (currentScroll > srcOrigH * 1.5) {
+                    currentScroll -= srcOrigH;
+                    src.scrollTop = currentScroll;
                 }
+
+                if (isLeft) lastLScroll = currentScroll;
+                else lastRScroll = currentScroll;
+
+                if (isInfoOpen) return;
+
+                let tgtScroll = tgt.scrollTop + (delta * 0.15);
+
+                if (tgtScroll < tgtOrigH * 0.5) tgtScroll += tgtOrigH;
+                else if (tgtScroll > tgtOrigH * 1.5) tgtScroll -= tgtOrigH;
+
+                tgt.scrollTop = tgtScroll;
+
+                if (isLeft) lastRScroll = tgt.scrollTop;
+                else lastLScroll = tgt.scrollTop;
             }
 
             window.addEventListener("load", () => {
-                leftOriginalHeight  = setupInfiniteScroll(leftWrapper,  leftGrid);
-                rightOriginalHeight = setupInfiniteScroll(rightWrapper, rightGrid);
+                lWrap.scrollTop = lOrigHeight;
+                rWrap.scrollTop = rOrigHeight;
 
-                leftWrapper.scrollTop  = leftOriginalHeight;
-                rightWrapper.scrollTop = rightOriginalHeight;
-                lastLeftScroll  = leftWrapper.scrollTop;
-                lastRightScroll = rightWrapper.scrollTop;
+                lastLScroll = lOrigHeight;
+                lastRScroll = rOrigHeight;
 
-                animateMagneticEffect();
-
-                leftWrapper.addEventListener("scroll",  () => handleScroll(leftWrapper,  rightWrapper, leftOriginalHeight,  rightOriginalHeight, true),  { passive: true });
-                rightWrapper.addEventListener("scroll", () => handleScroll(rightWrapper, leftWrapper,  rightOriginalHeight, leftOriginalHeight,  false), { passive: true });
+                lWrap.addEventListener("scroll", (e) => handleScroll(e, true), { passive: true });
+                rWrap.addEventListener("scroll", (e) => handleScroll(e, false), { passive: true });
             });
-
-            const leftCol  = document.querySelector(".left");
-            const rightCol = document.querySelector(".right");
-
-            const setLeftActive  = () => { leftWrapper.style.zIndex  = "2"; rightWrapper.style.zIndex = "1"; };
-            const setRightActive = () => { rightWrapper.style.zIndex = "2"; leftWrapper.style.zIndex  = "1"; };
-
-            leftCol.addEventListener("mouseenter",  setLeftActive);
-            rightCol.addEventListener("mouseenter", setRightActive);
-            leftCol.addEventListener("touchstart",  setLeftActive,  { passive: true });
-            rightCol.addEventListener("touchstart", setRightActive, { passive: true });
         </script>
     </body>
 </html>

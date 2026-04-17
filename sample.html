@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mariia Kvasnevska©</title>
+    <style>
+        @font-face {
+            font-family: "fOnT";
+            src: url("font/KTF2101-Bold.otf") format("opentype");
+        }
+        body, html {
+            margin: 0; padding: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            background-color: #fff;
+            font-family: "fOnT", system-ui, Helvetica, sans-serif;
+            font-weight: 500;
+            color: rgba(20, 20, 20, 1);
+            font-size: 14px;
+            line-height: 1.1;
+            letter-spacing: .01em;
+        }
+        img {
+            height: 55vh;
+            display: block;
+        }
+        #viewport {
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            position: relative;
+            cursor: default;
+            overflow: hidden;
+        }
+        #world, .world__inner, .col-wrapper {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            inset: 0;
+        }
+        .col-wrapper {
+            overflow-y: auto;
+            overflow-x: hidden;
+            pointer-events: none;
+            scrollbar-width: none;
+            overscroll-behavior: none;
+        }
+        .col-wrapper::-webkit-scrollbar { display: none; }
+
+        .left-wrapper { z-index: 1; }
+        .right-wrapper { z-index: 1; }
+
+        /* Убран грязный хак с RTL, используем Flexbox */
+        .left, .right {
+            width: 50%;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Центрирует картинки внутри 50% */
+            gap: 90px;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .right { margin-left: 50%; }
+
+        .world-image {
+            position: relative;
+            user-select: none;
+            -webkit-user-drag: none;
+            cursor: pointer;
+            height: fit-content;
+            width: fit-content;
+            display: flex;
+            flex-direction: column;
+            z-index: 1;
+        }
+        .image-desc {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            color: rgba(20, 20, 20, 1);
+            z-index: -1;
+        }
+        .world-image img {
+            transition: filter 0.3s ease;
+        }
+        .world-image.is-active img {
+            filter: opacity(0.1);
+        }
+
+        /* Курсор переведен на GPU для плавности */
+        #cursor-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 9;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            will-change: transform;
+        }
+        #cursor-image.visible {
+            opacity: 1;
+        }
+        #cursor-image img {
+            display: block;
+            box-shadow: none;
+            filter: none;
+        }
+
+        /* UI элементы */
+        .ui-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            z-index: 90;
+            padding: 5px;
+            text-align: center;
+        }
+        .ui-layer__bottom {
+            position: fixed;
+            bottom: 0;
+            width: 100vw;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 5px;
+            z-index: 90;
+            padding: 5px;
+            box-sizing: border-box;
+            cursor: pointer;
+            color: white;
+            mix-blend-mode: difference;
+        }
+        .ui-layer__cat-navigation {
+            display: flex;
+            flex-direction: row;
+            gap: 5px;
+            justify-content: center;
+            align-items: center;
+            margin-inline: auto;
+        }
+        .btn-custom__background {
+            width: fit-content;
+            pointer-events: auto;
+            cursor: pointer;
+            color: black;
+            transition: color 0.3s cubic-bezier(.77,0,.175,1), padding 0.3s linear;
+        }
+        .btn-custom__background:hover {
+            color: rgba(5, 5, 5, 1);
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+        .btn-custom__inner {
+            color: white;
+        }
+        .instructions {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            color: black;
+            cursor: pointer;
+            display: flex;
+            mix-blend-mode: difference;
+        }
+        .divider {
+            padding-top: 5px;
+            padding-bottom: 5px;
+            width: 1px;
+            height: 100%;
+            background-color: rgba(190, 190, 190, 1);
+            pointer-events: none;
+        }
+        .title {
+            color: white;
+        }
+
+        /* Попап с информацией */
+        .information {
+            position: fixed;
+            inset: 0;
+            z-index: 99;
+            padding: 5px;
+            font-size: 66px;
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            overflow-y: auto;
+            text-align: left;
+            box-sizing: border-box;
+            overscroll-behavior: contain;
+        }
+        .information-wrapper {
+            background-color: rgba(255, 255, 255, 0.8);
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .information-wrapper.is-visible {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="viewport">
+        <div class="information-wrapper">
+            <div id="information" class="information">
+                <div>
+                    Creative Producer, Stylist, Art Director.
+                    <br /><br />
+                    As a stylist and costume designer, she has worked on campaigns and lookbooks (E-commerce) featured in Vogue UA, Elle UA, 10 Magazines DE, and Kaltblut. Her portfolio includes commercial projects for BMW and various music videos.
+                    <br><br>
+                    She worked with brands such as Jacquemus, Mugler, Alexander Wang, Coperni, Stella McCartney, Proenza Schouler, Isabel Marant, Ami Paris, and MISBHV, alongside Ukrainian labels Paskal, Gudu and so on. She also works extensively with jewelry brands, including Panconesi, Completedworks, La2l, and Rimmart.
+                    <br /><br />
+                    Her production experience covers a wide range of events, from launching educational courses to organizing art exhibitions, including her work as executive producer for the Poligon Project—a community and art exhibition for emerging Ukrainian artists.
+
+                    Currently based in Berlin, she works in the retail sector, bringing expertise in offline marketing and visual merchandising to the management of multiple retail locations, focusing on the intersection of brand identity and sales performance.<br /><br />
+                    Her visual language is shaped by two distinct sources of inspiration: a lifelong background in movement and dance, which informs how she anchors imagery through the body, and the raw, rebellious energy of the Ukrainian youth cultural scene.
+                </div>
+            </div>
+        </div>
+
+        <div id="cursor-image"><img src="" alt="cursor" /></div>
+
+        <div class="ui-layer">
+            <div></div>
+        </div>
+
+        <div class="ui-layer__bottom">
+            Instagram, Email
+        </div>
+
+        <div class="instructions">
+            <div class="ui-layer__cat-navigation">
+                <div class="title">© Mariia Kvasnevska</div>
+                <div class="divider"></div>
+                <div class="btn-custom__background"><div class="btn-custom__inner">Overview</div></div>
+                <div class="divider"></div>
+                <div class="btn-custom__background"><div class="btn-custom__inner">Photography</div></div>
+                <div class="divider"></div>
+                <div class="btn-custom__background"><div class="btn-custom__inner">Video</div></div>
+                <div class="divider"></div>
+                <div class="btn-custom__background"><div class="btn-custom__inner">Events</div></div>
+                <div class="divider"></div>
+                <div id="information-btn" class="btn-custom__background"><div class="btn-custom__inner">About</div></div>
+            </div>
+        </div>
+
+        <div id="world">
+            <div class="world__inner">
+                <div class="col-wrapper left-wrapper">
+                    <div class="left">
+                        <div class="world-image"><img src="images/x.webp" draggable="false" alt="Work 1" /></div>
+                        <div class="world-image"><img src="images/z.webp" draggable="false" alt="Work 2" /></div>
+                        <div class="world-image"><img src="images/м.webp" draggable="false" alt="Work 3" /></div>
+                        <div class="world-image"><img src="images/7.png" draggable="false" alt="Work 4" /></div>
+                    </div>
+                </div>
+
+                <div class="col-wrapper right-wrapper">
+                    <div class="right">
+                        <div class="world-image"><img src="images/2.png" draggable="false" alt="Work 5" /></div>
+                        <div class="world-image"><img src="images/qqq.gif" draggable="false" alt="Work 6w" /></div>
+                        <div class="world-image"><img src="images/8.png" draggable="false" alt="Work 6" /></div>
+                        <div class="world-image"><img src="images/1.png" draggable="false" alt="Work 7" /></div>
+                        <div class="world-image"><img src="images/n.webp" draggable="false" alt="Work 8" /></div>
+                        <div class="world-image"><img src="images/5.png" draggable="false" alt="Work 9" /></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const $ = query => document.querySelector(query);
+        const $$ = query => document.querySelectorAll(query);
+
+        const infoBtn = $("#information-btn");
+        const infoBlock = $("#information");
+        const infoWrap = $(".information-wrapper");
+        const cursor = $("#cursor-image");
+        const cursorImg = cursor.querySelector("img");
+        const lWrap = $(".left-wrapper");
+        const rWrap = $(".right-wrapper");
+        const lGrid = $(".left");
+        const rGrid = $(".right");
+
+        // Состояния
+        let isInfoOpen = false;
+        let activeCol = null;
+        let lastInfoScroll = 0;
+
+        infoBlock.onclick = () => {
+            infoWrap.classList.remove("is-visible");
+            isInfoOpen = false;
+            activeCol = null; // Сброс колонки при закрытии
+        };
+
+        infoWrap.onclick = e => e.stopPropagation();
+
+        infoBtn.onclick = () => {
+            infoWrap.classList.add("is-visible");
+            isInfoOpen = true;
+            lastInfoScroll = infoBlock.scrollTop;
+        };
+
+        infoBlock.onscroll = () => {
+            if (!isInfoOpen) return;
+            const delta = infoBlock.scrollTop - lastInfoScroll;
+            lWrap.scrollTop += delta * 0.5;
+            rWrap.scrollTop -= delta * 0.5;
+            lastInfoScroll = infoBlock.scrollTop;
+        };
+
+        // Движение курсора (Оптимизировано через transform3d)
+        let mx = window.innerWidth / 2, my = window.innerHeight / 2, cx = mx, cy = my;
+        document.addEventListener("mousemove", e => { mx = e.clientX; my = e.clientY; });
+
+        (function animateCursor() {
+            cx += (mx - cx) * 0.15;
+            cy += (my - cy) * 0.15;
+            cursor.style.transform = `translate3d(${cx}px, ${cy}px, 0) translate(-50%, -50%)`;
+            requestAnimationFrame(animateCursor);
+        })();
+
+        // Логика Hover эффектов
+        let activeHoverId = null;
+
+        const toggleImageState = (el, isActive) => {
+            if (!el) return;
+            const id = el.dataset.id;
+
+            if (id) {
+                $$(`.world-image[data-id="${id}"]`).forEach(n => n.classList.toggle("is-active", isActive));
+            } else {
+                el.classList.toggle("is-active", isActive);
+            }
+
+            if (isActive) {
+                activeHoverId = id || el;
+                const newSrc = el.querySelector("img").getAttribute("src");
+
+                if (cursorImg.getAttribute("src") !== newSrc) {
+                    cursorImg.setAttribute("src", newSrc);
+                }
+                cursor.classList.add("visible");
+            } else {
+                if (activeHoverId === (id || el)) {
+                    cursor.classList.remove("visible");
+                    activeHoverId = null;
+                }
+            }
+        };
+
+        $("#world").addEventListener("mouseover", e => {
+            const target = e.target.closest(".world-image");
+            if (!target) return;
+
+            const related = e.relatedTarget;
+            if (related && target.contains(related)) return;
+
+            toggleImageState(target, true);
+        });
+
+        $("#world").addEventListener("mouseout", e => {
+            const target = e.target.closest(".world-image");
+            if (!target) return;
+
+            const related = e.relatedTarget;
+            if (related && target.contains(related)) return;
+
+            if (related && (related.closest('.instructions') || related.closest('.ui-layer__bottom') || related.closest('.ui-layer'))) {
+                return;
+            }
+
+            toggleImageState(target, false);
+        });
+
+        $$('.instructions, .ui-layer__bottom, .ui-layer').forEach(menu => {
+            menu.addEventListener('mouseleave', e => {
+                const related = e.relatedTarget;
+                if (related && (related.closest('.world-image') || related.closest('.instructions') || related.closest('.ui-layer__bottom') || related.closest('.ui-layer'))) {
+                    return;
+                }
+
+                if (activeHoverId) {
+                    const activeEl = document.querySelector('.world-image.is-active');
+                    if (activeEl) toggleImageState(activeEl, false);
+                }
+            });
+        });
+
+        // Логика бесконечного скролла
+        function setupScroll(wrapper, grid) {
+            const items = Array.from(grid.querySelectorAll(".world-image"));
+            const prefix = wrapper.className.split(" ")[1];
+
+            items.forEach((item, i) => {
+                item.dataset.id = `${prefix}-${i}`;
+            });
+
+            const clone = () => items.forEach(item => grid.appendChild(item.cloneNode(true)));
+            clone();
+            const firstCloneOffset = items[items.length - 1].nextElementSibling.offsetTop;
+            clone();
+
+            return firstCloneOffset - items[0].offsetTop;
+        }
+
+        let lOrigHeight = 0, rOrigHeight = 0;
+        let lastLScroll = 0, lastRScroll = 0;
+        let isSyncing = false; // Блокировка рекурсивного скролла
+
+        // Очищаем активную колонку при уходе мыши, чтобы не ломался параллакс
+        lWrap.addEventListener("mouseenter", () => activeCol = 'left');
+        rWrap.addEventListener("mouseenter", () => activeCol = 'right');
+        lWrap.addEventListener("mouseleave", () => activeCol = null);
+        rWrap.addEventListener("mouseleave", () => activeCol = null);
+
+        lWrap.addEventListener("touchstart", () => activeCol = 'left', {passive: true});
+        rWrap.addEventListener("touchstart", () => activeCol = 'right', {passive: true});
+
+        function handleScroll(e, isLeft) {
+            if (isInfoOpen || isSyncing) return; // Защита от конфликта с меню About
+            if (isLeft && activeCol !== 'left') return;
+            if (!isLeft && activeCol !== 'right') return;
+
+            const src = isLeft ? lWrap : rWrap;
+            const tgt = isLeft ? rWrap : lWrap;
+            const srcOrigH = isLeft ? lOrigHeight : rOrigHeight;
+            const tgtOrigH = isLeft ? rOrigHeight : lOrigHeight;
+
+            let currentScroll = src.scrollTop;
+            let lastScroll = isLeft ? lastLScroll : lastRScroll;
+            const delta = currentScroll - lastScroll;
+
+            // Цикличность активной колонки
+            if (currentScroll < srcOrigH * 0.5) {
+                currentScroll += srcOrigH;
+                src.scrollTop = currentScroll;
+            } else if (currentScroll > srcOrigH * 1.5) {
+                currentScroll -= srcOrigH;
+                src.scrollTop = currentScroll;
+            }
+
+            if (isLeft) lastLScroll = currentScroll;
+            else lastRScroll = currentScroll;
+
+            // Движение соседней колонки (вынесено в rAF для производительности)
+            if (Math.abs(delta) > 0 && Math.abs(delta) < 1000) {
+                isSyncing = true;
+                requestAnimationFrame(() => {
+                    let tgtScroll = tgt.scrollTop + (delta * 0.15);
+
+                    if (tgtScroll < tgtOrigH * 0.5) tgtScroll += tgtOrigH;
+                    else if (tgtScroll > tgtOrigH * 1.5) tgtScroll -= tgtOrigH;
+
+                    tgt.scrollTop = tgtScroll;
+
+                    if (isLeft) lastRScroll = tgt.scrollTop;
+                    else lastLScroll = tgt.scrollTop;
+
+                    isSyncing = false;
+                });
+            }
+        }
+
+        window.addEventListener("load", () => {
+            lOrigHeight = setupScroll(lWrap, lGrid);
+            rOrigHeight = setupScroll(rWrap, rGrid);
+
+            lWrap.scrollTop = lOrigHeight;
+            rWrap.scrollTop = rOrigHeight;
+            lastLScroll = lOrigHeight;
+            lastRScroll = rOrigHeight;
+
+            lWrap.addEventListener("scroll", (e) => handleScroll(e, true), { passive: true });
+            rWrap.addEventListener("scroll", (e) => handleScroll(e, false), { passive: true });
+        });
+
+        // Смена слоев Z-index при наведении
+        const bringToFront = (frontWrap, backWrap) => {
+            frontWrap.style.zIndex = "2"; backWrap.style.zIndex = "1";
+        };
+
+        lGrid.onmouseenter = lGrid.ontouchstart = () => bringToFront(lWrap, rWrap);
+        rGrid.onmouseenter = rGrid.ontouchstart = () => bringToFront(rWrap, lWrap);
+
+    </script>
+</body>
+</html>
