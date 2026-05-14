@@ -581,3 +581,709 @@
         </script>
     </body>
 </html>
+<!--
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mariia Kvasnevska</title>
+        <!-- Подключаем PixiJS -->
+        <script src="https://unpkg.com/pixi.js@8.18.1/dist/pixi.min.js"></script>
+        <!-- Подключаем GSAP для плавной анимации -->
+        <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
+
+        <style>
+            @font-face {
+                font-family: "fOnT";
+                src: url("font/KTF2101-Bold.otf") format("opentype");
+            }
+            body, html {
+                margin: 0;
+                padding: 0;
+                width: 100vw;
+                height: 100vh;
+                height: 100dvh;
+                overflow: hidden;
+                background-color: white;
+                font-family: system-ui, Helvetica, sans-serif;
+                font-weight: 300;
+                color: black;
+                font-size: 14px;
+                line-height: 1.15;
+                letter-spacing: .01em;
+            }
+            img {
+                height: 45vh;
+                display: block;
+            }
+            #viewport {
+                width: 100%;
+                height: 100vh;
+                height: 100dvh;
+                position: relative;
+                cursor: default;
+                overflow: hidden;
+            }
+            #world, .world__inner, .col-wrapper {
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                inset: 0;
+            }
+            .col-wrapper {
+                overflow-y: auto;
+                overflow-x: hidden;
+                pointer-events: none;
+                scrollbar-width: none;
+                overscroll-behavior: none;
+                transition: opacity 0.3s linear;
+            }
+            .col-wrapper::-webkit-scrollbar {
+                display: none;
+            }
+            .col-wrapper.is-back {
+                opacity: 0.05;
+            }
+            .left-wrapper {
+                z-index: 1;
+                opacity: 1;
+            }
+            .right-wrapper {
+                z-index: 1;
+                opacity: 1;
+            }
+            .left, .right {
+                width: 50%;
+                pointer-events: auto;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 100px;
+                padding: 10px;
+                box-sizing: border-box;
+            }
+            .right {
+                margin-left: 50%;
+            }
+            .world-image {
+                position: relative;
+                user-select: none;
+                cursor: zoom-in;
+                height: fit-content;
+                width: fit-content;
+                display: flex;
+                flex-direction: column;
+                z-index: 1;
+                will-change: transform;
+            }
+            .world-image.returning {
+                transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            }
+            .world-image:hover {
+                z-index: 2;
+            }
+            .image-desc {
+                position: absolute;
+                top: 5px;
+                left: 5px;
+                color: black;
+                z-index: -1;
+            }
+            #cursor-image {
+                position: fixed;
+                top: 0;
+                left: 0;
+                pointer-events: none;
+                z-index: 9;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+                will-change: transform, opacity;
+            }
+            #cursor-image.visible {
+                opacity: 1;
+            }
+            #cursor-image img {
+                display: block;
+                box-shadow: none;
+                filter: none;
+                max-width: 100%;
+            }
+            #cursor-image img[src=""],
+            #cursor-image img:not([src]) {
+                visibility: hidden;
+            }
+            .ui-layer {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                display: grid;
+                grid-template-columns: repeat(1, 1fr);
+                z-index: 90;
+                padding: 5px;
+                text-align: center;
+            }
+            .ui-layer__bottom {
+                position: fixed;
+                bottom: 0;
+                width: 100vw;
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                gap: 5px;
+                z-index: 90;
+                padding: 5px;
+                box-sizing: border-box;
+                cursor: pointer;
+                color: black;
+                font-weight: 300;
+                opacity: 1;
+                transition: opacity 0.2s cubic-bezier(.77,0,.175,1);
+            }
+            .ui-layer__bottom.is-hidden {
+                transition: opacity 0.2s cubic-bezier(.77,0,.175,1);
+                opacity: 0;
+            }
+            .ui-layer__cat-navigation {
+                display: flex;
+                flex-direction: row;
+                gap: 5px;
+                justify-content: center;
+                align-items: center;
+                margin-inline: auto;
+                transition: background-color 0.3s cubic-bezier(.77,0,.175,1);
+            }
+            .btn-custom__background {
+                width: fit-content;
+                pointer-events: auto;
+                cursor: pointer;
+                transition: color 0.3s cubic-bezier(.77,0,.175,1), padding 0.3s linear;
+            }
+            .btn-custom__background:hover {
+                padding-left: 15px;
+                padding-right: 15px;
+                background-color: #F61D3D;
+            }
+            .btn-custom__inner {
+                color: black;
+            }
+            .instructions {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 10;
+                cursor: pointer;
+                display: flex;
+                transition: opacity 0.3s cubic-bezier(.77,0,.175,1);
+                opacity: 1;
+            }
+            .instructions.is-hidden {
+                opacity: 0;
+            }
+            .divider {
+                padding-top: 2.5px;
+                padding-bottom: 2.5px;
+                width: 1px;
+                height: 100%;
+                background-color: black;
+                pointer-events: none;
+            }
+            .title {
+                color: black;
+            }
+            .color-box {
+                background-color: #FFFDCF;
+            }
+            .information {
+                position: fixed;
+                inset: 0;
+                z-index: 99;
+                padding: 5px;
+                font-size: 66px;
+                font-weight: 300;
+                height: 100vh;
+                height: 100dvh;
+                width: 100vw;
+                overflow-y: auto;
+                text-align: left;
+                box-sizing: border-box;
+                overscroll-behavior: contain;
+            }
+            .information-wrapper {
+                position: fixed;
+                inset: 0;
+                z-index: 100;
+                height: 100vh;
+                height: 100dvh;
+                width: 100vw;
+                visibility: hidden;
+                opacity: 0;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+            .information-wrapper.is-visible {
+                visibility: visible;
+                opacity: 1;
+            }
+            #info-background {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vw;
+                z-index: -1;
+                pointer-events: none;
+            }
+            .yellow-bg {
+                background-color: #FFFDCF;
+            }
+            #image-cursor-desc {
+                position: fixed;
+                top: 0;
+                left: 0;
+                pointer-events: none;
+                z-index: 1000;
+                opacity: 0;
+                white-space: nowrap;
+                background-color: #F61D3D;
+                color: white;
+                padding: 2px 8px;
+                font-size: 11px;
+                text-transform: uppercase;
+                transition: opacity 0.3s ease;
+                will-change: transform;
+            }
+            #image-cursor-desc.is-visible {
+                opacity: 1;
+            }
+            #top-image-description {
+                position: fixed;
+                top: 0;
+                padding: 5px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 1000;
+                visibility: hidden;
+                pointer-events: none;
+            }
+            #top-image-description.is-visible {
+                visibility: visible !important;
+            }
+            .view-image-wrapper {
+                cursor: zoom-out;
+                z-index: 89;
+                position: relative;
+                transform: translate3d(0, 110%, 0);
+                transition: transform 0.6s cubic-bezier(.77,0,.175,1);
+                will-change: transform;
+            }
+            .view-image-wrapper.is-visible {
+                transform: translate3d(0, 0, 0);
+            }
+            .view-image {
+                margin-inline: auto;
+                height: 100vh;
+                width: 100vh;
+                cursor: auto;
+                position: relative;
+                cursor: e-resize;
+            }
+            .view-image__text {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                opacity: 0;
+                width: 100vw;
+                z-index: 110;
+            }
+            .view-image__text__inner {
+                width: fit-content;
+                margin-inline: auto;
+                text-align: left;
+                display: flex;
+                flex-direction: column;
+                padding: 5px;
+            }
+            .view-image__text.is-visible {
+                transition: opacity 0.2s cubic-bezier(.77,0,.175,1);
+                opacity: 1;
+            }
+            .opacity {
+                opacity: 0.5;
+            }
+            .white-bg {
+                background-color: white;
+            }
+            .red-bg {
+                background-color: #F61D3D;
+            }
+            .mr {
+                margin-right: 5px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="viewport">
+            <div class="view-image-wrapper">
+                <div class="view-image__text">
+                    <div class="view-image__text__inner">
+                        <div>
+                            <span class="yellow-bg">1/3</span>
+                        </div>
+                        <div>
+                            <span class="red-bg mr">
+                                Aisenberg Icons
+                            </span>
+                            <span class="yellow-bg">
+                                Art Direction, Production, Styling
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Контейнер для отображения (CanvasPixi и GIF) -->
+                <div class="view-image"></div>
+            </div>
+
+            <div class="information-wrapper">
+                <canvas id="info-background" width="1920" height="968"></canvas>
+                <div id="information" class="information">
+                    <div>
+                        <span class="color-box">Creative Producer</span>,
+                        <span class="color-box">Stylist</span>,
+                        <span class="color-box">Art Director</span>.<br><br>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui-layer">
+                <div id="top-image-description">Desc</div>
+            </div>
+
+            <div class="ui-layer__bottom">
+                <div class="ui-layer__bottom__inner">
+                    <span class="btn-custom__background">Instagram</span>,
+                    <span class="btn-custom__background">Email</span>
+                </div>
+            </div>
+
+            <div class="instructions">
+                <div class="ui-layer__cat-navigation">
+                    <div class="title">© Mariia Kvasnevska</div>
+                    <div class="divider"></div>
+                    <div class="btn-custom__background"><div class="btn-custom__inner">Index</div></div>
+                    <div class="divider"></div>
+                    <div class="btn-custom__background"><div class="btn-custom__inner">Photography</div></div>
+                    <div class="divider"></div>
+                    <div class="btn-custom__background"><div class="btn-custom__inner">Video</div></div>
+                    <div class="divider"></div>
+                    <div class="btn-custom__background"><div class="btn-custom__inner">Events</div></div>
+                    <div class="divider"></div>
+                    <div id="information-btn" class="btn-custom__background"><div class="btn-custom__inner">About</div></div>
+                </div>
+            </div>
+
+            <div id="world">
+                <div class="world__inner">
+                    <div class="col-wrapper left-wrapper">
+                        <div class="left">
+                            <div class="world-image"><img src="images/1.png" draggable="false" alt="Personal Project 1"></div>
+                            <div class="world-image"><img src="images/n.webp" draggable="false" alt="Aisenberg Icons"></div>
+                            <div class="world-image"><img src="images/z.webp" draggable="false" alt="Sokolroom"></div>
+                            <div class="world-image"><img src="images/x.webp" draggable="false" alt="Solar Silver"></div>
+                            <div class="world-image"><img src="images/7.png" draggable="false" alt="Personal Project 5"></div>
+                            <div class="world-image"><img src="images/8.png" draggable="false" alt="Personal Project 6"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-wrapper right-wrapper">
+                        <div class="right">
+                            <div class="world-image"><img src="images/zxc.gif" draggable="false" alt="Personal Project 7"></div>
+                            <div class="world-image"><img src="images/xxz.gif" draggable="false" alt="Personal Project 8"></div>
+                            <div class="world-image"><img src="images/mmmm.JPG" draggable="false" alt="Personal Project 9"></div>
+                            <div class="world-image"><img src="images/se.gif" draggable="false" alt="Personal Project 10"></div>
+                            <div class="world-image"><img src="images/vv.JPG" draggable="false" alt="Personal Project 11"></div>
+                            <div class="world-image"><img src="images/qqq.jpg" draggable="false" alt="Personal Project 12"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', async () => {
+                // Вспомогательные функции
+                const $ = query => document.querySelector(query);
+                const $$ = query => document.querySelectorAll(query);
+
+                // UI Элементы
+                const infoCanvas = document.getElementById('info-background');
+                const ictx = infoCanvas.getContext('2d');
+                const infoBtn = $("#information-btn");
+                const infoBlock = $("#information");
+                const infoWrap = $(".information-wrapper");
+                const lWrap = $(".left-wrapper");
+                const rWrap = $(".right-wrapper");
+                const viewImageWrapper = $('.view-image-wrapper');
+                const viewer = $('.view-image');
+                const viewImageText = $('.view-image__text');
+                const uiLayerBottom = $('.ui-layer__bottom');
+                const instructions = $('.instructions');
+                const topDesc = $('#top-image-description');
+                const allImagesContainers = $$('.world-image');
+
+                let isViewerOpen = false;
+
+                // ==========================================
+                // ИНИЦИАЛИЗАЦИЯ PIXIJS (Высокое качество)
+                // ==========================================
+                const app = new PIXI.Application();
+                await app.init({
+                    backgroundAlpha: 0, // Прозрачный фон
+                    resizeTo: viewer,
+                    resolution: window.devicePixelRatio || 1, // Поддержка Retina
+                    autoDensity: true,
+                    antialias: true
+                });
+
+                app.canvas.style.display = 'block';
+                app.canvas.style.marginInline = 'auto';
+                app.canvas.style.height = '100vh';
+                app.canvas.style.width = '100vh';
+                app.canvas.style.position = 'relative';
+                app.canvas.style.cursor = 'e-resize';
+
+                viewImageWrapper.prepend(app.canvas);
+
+                const container = new PIXI.Container();
+                app.stage.addChild(container);
+
+                window.pixiApp = app;
+
+                // ==========================================
+                // ЛОГИКА ГАЛЕРЕИ: ХОВЕРЫ И КЛИКИ (GLITCH ЭФФЕКТ)
+                // ==========================================
+                allImagesContainers.forEach(imgContainer => {
+                    const imgElement = imgContainer.querySelector('img');
+
+                    // Ховер для отображения описания
+                    imgContainer.addEventListener('mouseenter', () => {
+                        if (isViewerOpen) return;
+                        const description = imgElement.getAttribute('alt') || "";
+                        topDesc.textContent = description;
+                        topDesc.classList.add('is-visible');
+                    });
+
+                    imgContainer.addEventListener('mouseleave', () => {
+                        topDesc.classList.remove('is-visible');
+                    });
+
+                    // Клик для открытия картинки
+                    imgContainer.addEventListener('click', async () => {
+                        isViewerOpen = true;
+                        const imgSrc = imgElement.getAttribute('src');
+                        const isGif = imgSrc.toLowerCase().endsWith('.gif');
+
+                        // Очищаем старый контент
+                        container.removeChildren();
+                        viewer.innerHTML = '';
+
+                        // Всегда показываем PixiJS в момент клика для анимации
+                        app.canvas.style.display = 'block';
+
+                        try {
+                            // 1. Достаем текстуру прямо из DOM (решает проблему с GIF)
+                            const texture = PIXI.Texture.from(imgElement);
+
+                            // 2. Грузим карту смещения (можете заменить ссылку на локальный файл)
+                            const disMap = await PIXI.Assets.load('https://pixijs.com/assets/pixi-filters/displacement_map_repeat.jpg');
+
+                            // Настраиваем спрайт смещения
+                            const disSprite = new PIXI.Sprite(disMap);
+                            disSprite.texture.source.addressMode = 'repeat';
+                            disSprite.scale.set(2);
+
+                            // Настраиваем фильтр
+                            const dispFilter = new PIXI.DisplacementFilter(disSprite);
+                            container.addChild(disSprite);
+                            container.filters = [dispFilter];
+
+                            // Настраиваем основную картинку
+                            const sprite = new PIXI.Sprite(texture);
+                            sprite.anchor.set(0.5);
+                            sprite.x = app.screen.width / 2;
+                            sprite.y = app.screen.height / 2;
+
+                            const scaleX = app.screen.width / sprite.texture.width;
+                            const scaleY = app.screen.height / sprite.texture.height;
+                            const finalScale = Math.min(scaleX, scaleY) * 0.9;
+
+                            // Начальные параметры перед анимацией
+                            sprite.alpha = 0;
+                            sprite.scale.set(finalScale);
+                            sprite.scale.y = finalScale * 2;
+
+                            container.addChild(sprite);
+
+                            // 3. Запускаем GSAP анимацию
+                            const tl = gsap.timeline({
+                                onComplete: () => {
+                                    // Когда глитч завершен, оживляем GIF (если это GIF)
+                                    if (isGif) {
+                                        app.canvas.style.display = 'none';
+                                        viewer.innerHTML = `<img src="${imgSrc}" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none;" alt="gif">`;
+                                    }
+                                }
+                            });
+
+                            // Шаги искажения (уменьшаем scale у displacement filter)
+                            tl.to(dispFilter.scale, { duration: 1, y: 600, x: 0.1, ease: "power2.inOut" })
+                              .to(dispFilter.scale, { duration: 1, y: 0.1, x: 0.1, ease: "power2.inOut" });
+
+                            // Плавно проявляем и сжимаем картинку (параметр 0 значит "начать вместе с предыдущим шагом")
+                            tl.to(sprite, { duration: 1, alpha: 1, ease: "power2.inOut" }, 0);
+                            tl.to(sprite.scale, { duration: 1, y: finalScale, ease: "power2.inOut" }, 0);
+
+                        } catch (error) {
+                            console.error("Ошибка при работе PixiJS:", error);
+                        }
+
+                        // Показываем интерфейс (стили)
+                        viewImageWrapper.classList.add('is-visible');
+                        lWrap.classList.add('is-back');
+                        rWrap.classList.add('is-back');
+
+                        setTimeout(() => { viewImageText.classList.add('is-visible'); }, 550);
+                        setTimeout(() => { instructions.classList.add('is-hidden'); }, 150);
+                        if(uiLayerBottom) uiLayerBottom.classList.add('is-hidden');
+                        if(topDesc) topDesc.classList.remove('is-visible');
+                    });
+                });
+
+                // ==========================================
+                // ЗАКРЫТИЕ ПРОСМОТРЩИКА
+                // ==========================================
+                viewImageWrapper.addEventListener('click', () => {
+                    isViewerOpen = false;
+
+                    if(topDesc) topDesc.classList.remove('is-visible');
+                    instructions.classList.remove('is-hidden');
+                    if(uiLayerBottom) uiLayerBottom.classList.remove('is-hidden');
+                    viewImageText.classList.remove('is-visible');
+                    viewImageWrapper.classList.remove('is-visible');
+                    lWrap.classList.remove('is-back');
+                    rWrap.classList.remove('is-back');
+
+                    // Ждем окончания CSS анимации закрытия перед очисткой памяти
+                    setTimeout(() => {
+                        if (!viewImageWrapper.classList.contains('is-visible')) {
+                            container.removeChildren();
+                            viewer.innerHTML = '';
+                        }
+                    }, 300);
+                });
+
+                // Обновление PixiJS при изменении размеров экрана
+                window.addEventListener('resize', () => {
+                    if (container.children.length > 0) {
+                        const sprite = container.children[container.children.length - 1]; // Берем последний (само фото)
+                        if (sprite && sprite.texture) {
+                            sprite.x = app.screen.width / 2;
+                            sprite.y = app.screen.height / 2;
+                            const scaleX = app.screen.width / sprite.texture.width;
+                            const scaleY = app.screen.height / sprite.texture.height;
+                            sprite.scale.set(Math.min(scaleX, scaleY) * 0.9);
+                        }
+                    }
+                });
+
+                // ==========================================
+                // ЛОГИКА ИНТЕРФЕЙСА: СТРАНИЦА "ОБО МНЕ" И СКРОЛЛ
+                // ==========================================
+                let isInfoOpen = false;
+
+                infoBlock.onclick = () => {
+                    infoWrap.classList.remove("is-visible");
+                    isInfoOpen = false;
+                };
+                infoBtn.onclick = () => {
+                    infoWrap.classList.add("is-visible");
+                    isInfoOpen = true;
+                };
+
+                let currentLScroll = 0; let currentRScroll = 0;
+                let targetLScroll = 0; let targetRScroll = 0;
+                let activeCol = 'left';
+
+                lWrap.addEventListener("wheel", () => { activeCol = 'left'; }, { passive: true });
+                rWrap.addEventListener("wheel", () => { activeCol = 'right'; }, { passive: true });
+                lWrap.addEventListener("touchstart", () => { activeCol = 'left'; }, { passive: true });
+                rWrap.addEventListener("touchstart", () => { activeCol = 'right'; }, { passive: true });
+
+                lWrap.addEventListener("scroll", () => {
+                    if (activeCol !== 'left') return;
+                    targetLScroll = lWrap.scrollTop;
+                    currentLScroll = lWrap.scrollTop;
+                    targetRScroll = targetLScroll;
+                }, { passive: true });
+
+                rWrap.addEventListener("scroll", () => {
+                    if (activeCol !== 'right') return;
+                    targetRScroll = rWrap.scrollTop;
+                    currentRScroll = rWrap.scrollTop;
+                    targetLScroll = targetRScroll;
+                }, { passive: true });
+
+                // Плавный скролл
+                (function renderLoop() {
+                    if (!isInfoOpen) {
+                        const ease = 0.07;
+
+                        let diffL = targetLScroll - currentLScroll;
+                        if (Math.abs(diffL) > 0.1) {
+                            currentLScroll += diffL * ease;
+                            if (activeCol !== 'left') lWrap.scrollTop = currentLScroll;
+                        } else {
+                            currentLScroll = targetLScroll;
+                        }
+
+                        let diffR = targetRScroll - currentRScroll;
+                        if (Math.abs(diffR) > 0.1) {
+                            currentRScroll += diffR * ease;
+                            if (activeCol !== 'right') rWrap.scrollTop = currentRScroll;
+                        } else {
+                            currentRScroll = targetRScroll;
+                        }
+                    }
+                    requestAnimationFrame(renderLoop);
+                })();
+
+                // Градиент для фона информации
+                function drawGradient() {
+                    const cx = infoCanvas.width / 2;
+                    const cy = infoCanvas.height / 2;
+                    const radius = Math.max(infoCanvas.width, infoCanvas.height) / 1;
+                    const gradient = ictx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+
+                    gradient.addColorStop(0, "#F61D3D");
+                    gradient.addColorStop(0.1, "#F61D3D");
+                    gradient.addColorStop(0.1, "#F61D3D");
+                    gradient.addColorStop(1, "#F61D3D");
+
+                    ictx.fillStyle = gradient;
+                    ictx.fillRect(0, 0, infoCanvas.width, infoCanvas.height);
+                }
+
+                function resizeCanvas() {
+                    infoCanvas.width = window.innerWidth;
+                    infoCanvas.height = window.innerHeight;
+                    drawGradient();
+                }
+
+                window.addEventListener('resize', resizeCanvas);
+                infoBtn.addEventListener('click', resizeCanvas);
+            });
+        </script>
+    </body>
+</html>-->

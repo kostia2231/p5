@@ -16,15 +16,19 @@
                 height: 100dvh;
                 overflow: hidden;
                 background-color: white;
-                font-family: system-ui, Helvetica, sans-serif;
-                font-weight: 500;
+                font-family: Arial, system-ui, Helvetica, sans-serif;
+                font-weight: 400;
                 color: black;
                 font-size: 14px;
                 line-height: 1.15;
                 letter-spacing: .01em;
             }
             img {
-                height: 45vh;
+                height: 50vh;
+                display: block;
+            }
+            video {
+                height: 40vh;
                 display: block;
             }
             #viewport {
@@ -47,6 +51,9 @@
                 pointer-events: none;
                 scrollbar-width: none;
                 overscroll-behavior: none;
+
+                transform: translateZ(0);
+                will-change: transform;
             }
             .col-wrapper::-webkit-scrollbar {
                 display: none;
@@ -88,9 +95,6 @@
             .world-image:hover {
                 z-index: 2;
             }
-            .world-image img {
-                /*transition: transform 0.1s linear;*/
-            }
             .image-desc {
                 position: absolute;
                 top: 5px;
@@ -98,12 +102,22 @@
                 color: black;
                 z-index: -1;
             }
-            .world-image img {
-                /*transition: filter 0.3s ease;*/
+
+            .grid-overlay {
+                position: absolute;
+                inset: 0;
+                background-color: white;
+                z-index: 80;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.6s cubic-bezier(.77,0,.175,1);
+                will-change: opacity;
             }
-            .world-image.is-active img {
-                /*filter: opacity(0.9);*/
+            .grid-overlay.is-visible {
+                opacity: 0.95;
+                pointer-events: auto;
             }
+
             #cursor-image {
                 position: fixed;
                 top: 0;
@@ -151,8 +165,18 @@
                 box-sizing: border-box;
                 cursor: pointer;
                 color: black;
-                font-weight: 500;
+                font-weight: 400;
+
+                opacity: 1;
+                transition: opacity 0.2s cubic-bezier(.77,0,.175,1);
+
             }
+
+            .ui-layer__bottom.is-hidden {
+                transition: opacity 0.2s cubic-bezier(.77,0,.175,1);
+                opacity: 0;
+            }
+
             .ui-layer__cat-navigation {
                 display: flex;
                 flex-direction: row;
@@ -184,6 +208,12 @@
                 z-index: 10;
                 cursor: pointer;
                 display: flex;
+
+                transition: opacity 0.3s cubic-bezier(.77,0,.175,1);
+                opacity: 1;
+            }
+            .instructions.is-hidden {
+                opacity: 0;
             }
             .divider {
                 padding-top: 2.5px;
@@ -195,8 +225,6 @@
             }
             .title {
                 color: black;
-                /*font-weight: 300;*/
-                /*background-color: #FFFDCF;*/
             }
             .color-box {
                 background-color: #FFFDCF;
@@ -207,7 +235,7 @@
                 z-index: 99;
                 padding: 5px;
                 font-size: 66px;
-                font-weight: 500;
+                font-weight: 400;
                 height: 100vh;
                 height: 100dvh;
                 width: 100vw;
@@ -236,15 +264,12 @@
                 top: 0;
                 left: 0;
                 width: 100vw;
-                height: 100vh;
+                height: 100vw;
                 z-index: -1;
                 pointer-events: none;
             }
             .yellow-bg {
                 background-color: #FFFDCF;
-            }
-            .ui-layer__bottom__inner {
-                /*color: rgba(0, 0, 0, 0.3);*/
             }
             #image-cursor-desc {
                 position: fixed;
@@ -279,11 +304,160 @@
             #top-image-description.is-visible {
                 visibility: visible !important;
             }
+            .view-image-wrapper{
+                cursor: zoom-out;
+                z-index: 89;
+                position: relative;
+                transform: translate3d(0, 110%, 0);
+                transition: transform 0.6s cubic-bezier(.77,0,.175,1);
+                will-change: transform;
+            }
+            .view-image-wrapper.is-visible {
+                transform: translate3d(0, 0, 0);
+            }
+            .view-image{
+                margin-inline: auto;
+                height: 100vh;
+                width: 100vw;
+                cursor: auto;
+                position: relative;
+            }
+            .view-image__text{
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                opacity: 0;
+                width: 100vw;
+                z-index: 110;
+            }
+            .view-image__text__inner{
+                width: fit-content;
+                margin-inline: auto;
+                text-align: left;
+                display: flex;
+                flex-direction: column;
+                padding: 5px;
+            }
+            .view-image__text.is-visible{
+                transition: opacity 0.2s cubic-bezier(.77,0,.175,1);
+                opacity: 1;
+            }
+
+            .video-controls {
+                display: none;
+                position: absolute;
+                /*top: 0;*/
+                top: 50%;
+                transform: translateY(-50%);
+                justify-content: space-between;
+                align-items: center;
+                width: 100%;
+                z-index: 110;
+                opacity: 0;
+            }
+            .video-controls.is-visible {
+                opacity: 1;
+            }
+            .video-controls > * {
+                pointer-events: auto;
+                cursor: pointer;
+            }
+
+            .opacity {
+                opacity: 0.5;
+            }
+            .white-bg {
+                background-color: white;
+            }
+            .red-bg {
+                background-color: #F61D3D;
+            }
+            .mr{
+                margin-right: 5px;
+            }
+            .video-controls__play-pause{
+                margin-left: 5px;
+                margin-right: 5px;
+                transition: color 0.3s cubic-bezier(.77,0,.175,1), padding 0.3s linear;
+            }
+            .video-controls__play-pause:hover{
+                padding-left: 15px;
+                padding-right: 15px;
+                background-color: #F61D3D;
+            }
+            .video-controls__less-more{
+                margin-left: 5px;
+                margin-right: 5px;
+                transition: color 0.3s cubic-bezier(.77,0,.175,1), padding 0.3s linear;
+            }
+            .video-controls__less-more:hover{
+                padding-left: 15px;
+                padding-right: 15px;
+                background-color: #FFFDCF;
+            }
+            .video-controls__sound{
+                margin-left: 5px;
+                margin-right: 5px;
+                transition: color 0.3s cubic-bezier(.77,0,.175,1), padding 0.3s linear;
+            }
+            .video-controls__sound:hover{
+                padding-left: 15px;
+                padding-right: 15px;
+                background-color: #FFFDCF;
+            }
+            .video-controls__time{
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-left: 5px;
+                margin-right: 5px;
+            }
+            .video-controls__time-duration{
+                color: rgba(0, 0, 0, 0.3);
+            }
         </style>
     </head>
 
     <body>
         <div id="viewport">
+            <div class="view-image-wrapper">
+
+                <div class="video-controls">
+
+                    <div class="video-controls__play-pause">Pause</div>
+                    <div class="video-controls__sound">Unmute</div>
+                    <div class="video-controls__progress" style="flex-grow: 1; margin: 0 10px; position: relative; height: 1px; display: flex; align-items: center; cursor: pointer; background-color: rgba(0, 0, 0, 0.1);">
+                        <div style="width: 100%; height: 1px;">
+                            <div class="video-controls__progress-bar" style="width: 0%; height: 100%; background-color: black; will-change: width;"></div>
+                        </div>
+                    </div>
+                    <div class="video-controls__time">
+                        <div class="video-controls__time-current">0:00:000</div>
+                        <div class="video-controls__time-duration">0:00:000</div>
+                    </div>
+                    <!--<div class="video-controls__less-more">Hide</div>-->
+                </div>
+
+                <div class="view-image__text">
+                    <div class="view-image__text__inner">
+                        <div>
+                            <span class="yellow-bg view-counter">1/3</span>
+                        </div>
+                        <div>
+                            <span class="red-bg mr project-title-ui">
+                                Aisenberg Icons
+                            </span>
+                            <span class="yellow-bg">
+                                Art Direction, Production, Styling
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="view-image"></div>
+            </div>
+
+            <!-- UI элементы -->
             <div class="information-wrapper">
                 <canvas id="info-background" width="1920" height="968"></canvas>
                 <div id="information" class="information">
@@ -322,34 +496,409 @@
                 </div>
             </div>
 
+            <!-- Главная сетка -->
             <div id="world">
                 <div class="world__inner">
                     <div class="col-wrapper left-wrapper">
-                        <div class="left">
-                            <div class="world-image"><img src="images/1.png" draggable="false" alt="Work 1"></div>
-                            <div class="world-image"><img src="images/n.webp" draggable="false" alt="Work 2"></div>
-                            <div class="world-image"><img src="images/z.webp" draggable="false" alt="Work 3"></div>
-                            <div class="world-image"><img src="images/x.webp" draggable="false" alt="Work 4"></div>
-                            <div class="world-image"><img src="images/7.png" draggable="false" alt="Work 5"></div>
-                            <div class="world-image"><img src="images/8.png" draggable="false" alt="Work 6"></div>
-                        </div>
+                        <div class="left"></div>
                     </div>
 
                     <div class="col-wrapper right-wrapper">
-                        <div class="right">
-                            <div class="world-image"><img src="images/zxc.gif" draggable="false" alt="Work 7"></div>
-                            <div class="world-image"><img src="images/xxz.gif" draggable="false" alt="Work 8"></div>
-                            <div class="world-image"><img src="images/mmmm.JPG" draggable="false" alt="Work 9"></div>
-                            <div class="world-image"><img src="images/se.gif" draggable="false" alt="Work 10"></div>
-                            <div class="world-image"><img src="images/vv.JPG" draggable="false" alt="Work 11"></div>
-                            <div class="world-image"><img src="images/qqq.jpg" draggable="false" alt="Work 12"></div>
-                        </div>
+                        <div class="right"></div>
                     </div>
                 </div>
             </div>
+
+            <div class="grid-overlay"></div>
+
         </div>
 
         <script>
+            const CLOUD_NAME = "dfzw4p8ez";
+            const TAG_NAME = "portfolio";
+
+            const gridOverlay = document.querySelector('.grid-overlay');
+
+            async function loadGalleryFromCloudinary() {
+                const videoUrl = `https://res.cloudinary.com/${CLOUD_NAME}/video/list/${TAG_NAME}.json`;
+                const imageUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/list/${TAG_NAME}.json`;
+
+                try {
+                    const [vRes, iRes] = await Promise.all([fetch(videoUrl), fetch(imageUrl)]);
+                    const vData = await vRes.json();
+                    const iData = await iRes.json();
+
+                    const videoMedia = [
+                        ...vData.resources.map(item => ({
+                            type: 'video',
+                            public_id: item.public_id,
+                            version: item.version,
+                            format: item.format,
+                            context: item.context
+                        })),
+                    ];
+                    const imageMedia = [
+                        ...iData.resources.map(item => ({
+                            type: 'image',
+                            public_id: item.public_id,
+                            version: item.version,
+                            format: item.format,
+                            context: item.context
+                        })),
+                    ];
+                    const allMedia = [...videoMedia, ...imageMedia];
+                    if (allMedia.length > 0) {
+                        renderGallery(allMedia);
+                    }
+                } catch (err) {
+                    console.error("API:", err);
+                }
+            }
+
+            function renderGallery(items) {
+                const leftCol = document.querySelector('.left');
+                const rightCol = document.querySelector('.right');
+                const topDescEl = document.querySelector('#top-image-description');
+
+                items.forEach((item, index) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'world-image';
+
+                    let content;
+                    let mediaUrl;
+
+                    if (item.type === 'video') {
+                        mediaUrl = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/${item.public_id}.${item.format}`;
+                        content = `<video src="${mediaUrl}" autoplay muted loop playsinline draggable="false"></video>`;
+
+                        wrapper.innerHTML = content;
+                        leftCol.appendChild(wrapper);
+                    } else {
+                        mediaUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${item.public_id}.${item.format}`;
+                        content = `<img src="${mediaUrl}" draggable="false">`;
+                        wrapper.innerHTML = content;
+                        rightCol.appendChild(wrapper);
+                    }
+
+                    const projectTag = item.context?.custom?.caption;
+
+                    if (projectTag) {
+                        wrapper.addEventListener('mouseenter', () => {
+                            if (isViewerOpen) return;
+                            topDescEl.textContent = projectTag;
+                            topDescEl.classList.add('is-visible');
+                        });
+
+                        wrapper.addEventListener('mouseleave', () => {
+                            topDescEl.classList.remove('is-visible');
+                        });
+
+                        wrapper.addEventListener('click', () => {
+                            openProject(projectTag, item.type, mediaUrl);
+                        });
+                    } else {
+                        wrapper.style.cursor = 'default';
+                    }
+                });
+            }
+
+            async function openProject(projectTag, initialType, initialUrl) {
+                isViewerOpen = true;
+
+                const viewImageWrapperLocal = document.querySelector('.view-image-wrapper');
+                const viewImageTextLocal = document.querySelector('.view-image__text');
+                const viewImageLocal = document.querySelector('.view-image');
+                const controls = document.querySelector('.video-controls');
+
+                document.querySelector('.project-title-ui').textContent = projectTag;
+
+                if (initialType === 'video') {
+                    controls.style.display = 'flex';
+                    viewImageLocal.innerHTML = `<video id="viewer-main-vid" src="${initialUrl}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:contain;"></video>`;
+                } else {
+                    controls.style.display = 'none';
+                    viewImageLocal.innerHTML = `<img id="viewer-main-img" src="${initialUrl}" style="width:100%; height:100%; object-fit:contain;">`;
+                }
+
+                document.querySelectorAll('#world video').forEach(v => v.pause());
+
+                const videoUrl = `https://res.cloudinary.com/${CLOUD_NAME}/video/list/${projectTag}.json`;
+                const imageUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/list/${projectTag}.json`;
+
+                try {
+                    const [vRes, iRes] = await Promise.all([
+                        fetch(videoUrl).then(r => r.ok ? r.json() : { resources: [] }),
+                        fetch(imageUrl).then(r => r.ok ? r.json() : { resources: [] })
+                    ]);
+
+                    const projectFiles = [
+                        ...vRes.resources.map(item => ({ ...item, type: 'video' })),
+                        ...iRes.resources.map(item => ({ ...item, type: 'image' }))
+                    ];
+
+                    projectFiles.sort((a, b) => a.public_id.localeCompare(b.public_id));
+
+                    if (projectFiles.length > 0) {
+                        renderFileInViewer(projectFiles);
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                }
+
+                viewImageWrapperLocal.classList.add('is-visible');
+                gridOverlay.classList.add('is-visible');
+
+                // Вызываем появление элементов с задержкой 550 мс
+                setTimeout(() => {
+                    viewImageTextLocal.classList.add('is-visible');
+                    // Если это видео - плавно показываем контролы вместе с текстом
+                    if (controls.style.display === 'flex') {
+                        controls.classList.add('is-visible');
+                    }
+                }, 550);
+
+                startProgressLoop(); // Запускаем цикл проверки видео
+
+                const instructionsLocal = document.querySelector('.instructions');
+                const uiLayerBottomLocal = document.querySelector('.ui-layer__bottom');
+                const topDescLocal = document.querySelector('#top-image-description');
+
+                setTimeout(() => {
+                    instructionsLocal.classList.add('is-hidden');
+                }, 150);
+                if(uiLayerBottomLocal){
+                    uiLayerBottomLocal.classList.add('is-hidden');
+                }
+                if(topDescLocal){
+                    topDescLocal.classList.remove('is-visible');
+                }
+            }
+
+            let currentProjectFiles = [];
+            let currentViewerIndex = 0;
+
+            function renderFileInViewer(files) {
+                currentProjectFiles = files;
+                currentViewerIndex = 0;
+                updateViewerFrame();
+            }
+
+            function updateViewerFrame() {
+                const file = currentProjectFiles[currentViewerIndex];
+                const totalCount = currentProjectFiles.length;
+
+                if (totalCount === 1) {
+                    document.querySelector('.view-counter').style.display = 'none';
+                }
+
+                document.querySelector('.view-counter').textContent = `${currentViewerIndex + 1}/${totalCount}`;
+
+                const viewImageLocal = document.querySelector('.view-image');
+                const controls = document.querySelector('.video-controls');
+                const isTextVisible = document.querySelector('.view-image__text').classList.contains('is-visible');
+
+                if (file.type === 'video') {
+                    controls.style.display = 'flex';
+                    if (isTextVisible) {
+                        requestAnimationFrame(() => controls.classList.add('is-visible'));
+                    }
+
+                    const url = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/q_auto,f_auto/${file.public_id}.${file.format}`;
+                    let vidEl = document.getElementById('viewer-main-vid');
+                    let imgEl = document.getElementById('viewer-main-img');
+
+                    if (imgEl) imgEl.remove();
+
+                    if (!vidEl) {
+                        viewImageLocal.innerHTML = `<video id="viewer-main-vid" src="${url}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:contain;"></video>`;
+                    } else {
+                        if (!vidEl.src.includes(file.public_id)) {
+                            vidEl.src = url;
+                            vidEl.play();
+                        }
+                    }
+                } else {
+                    controls.classList.remove('is-visible');
+                    controls.style.display = 'none';
+
+                    const lowResUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_100,q_50,f_auto/${file.public_id}.${file.format}`;
+                    const highResUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto/${file.public_id}.${file.format}`;
+
+                    let imgEl = document.getElementById('viewer-main-img');
+                    let vidEl = document.getElementById('viewer-main-vid');
+
+                    if (vidEl) vidEl.remove();
+
+                    if (!imgEl) {
+                        viewImageLocal.innerHTML = `<img id="viewer-main-img" src="${lowResUrl}" style="width:100%; height:100%; object-fit:contain;">`;
+                        imgEl = document.getElementById('viewer-main-img');
+                    } else {
+                        if (!imgEl.src.includes(file.public_id)) {
+                            imgEl.src = lowResUrl;
+                        }
+                    }
+
+                    const hdImage = new Image();
+                    hdImage.src = highResUrl;
+                    hdImage.onload = () => {
+                        if (currentProjectFiles[currentViewerIndex] === file) {
+                            imgEl.src = highResUrl;
+                        }
+                    };
+                }
+
+                if (currentViewerIndex < currentProjectFiles.length - 1) {
+                    const nextFile = currentProjectFiles[currentViewerIndex + 1];
+                    if (nextFile.type === 'image') {
+                        new Image().src = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto/${nextFile.public_id}.${nextFile.format}`;
+                    }
+                }
+                if (currentViewerIndex > 0) {
+                    const prevFile = currentProjectFiles[currentViewerIndex - 1];
+                    if (prevFile.type === 'image') {
+                        new Image().src = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto/${prevFile.public_id}.${prevFile.format}`;
+                    }
+                }
+            }
+
+            function formatTime(timeInSeconds) {
+                if (isNaN(timeInSeconds)) return "0:00";
+                // if (isNaN(timeInSeconds)) return "0:00:000";
+                const minutes = Math.floor(timeInSeconds / 60);
+                const seconds = Math.floor(timeInSeconds % 60);
+                // const milliseconds = Math.floor((timeInSeconds % 1) * 1000);
+
+                return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                // return `${minutes}:${seconds.toString().padStart(2, '0')}:${milliseconds.toString().padStart(3, '0')}`;
+            }
+
+            let progressLoopId;
+
+            function startProgressLoop() {
+                function loop() {
+                    const vid = document.getElementById('viewer-main-vid');
+                    const progressBar = document.querySelector('.video-controls__progress-bar');
+                    const btnPlay = document.querySelector('.video-controls__play-pause');
+                    const btnSound = document.querySelector('.video-controls__sound');
+
+                    const timeCurrent = document.querySelector('.video-controls__time-current');
+                    const timeDuration = document.querySelector('.video-controls__time-duration');
+
+                    if (vid && progressBar && btnPlay && btnSound) {
+                        if (vid.duration) {
+                            const percent = (vid.currentTime / vid.duration) * 100;
+                            progressBar.style.width = percent + '%';
+
+                            if (timeCurrent && timeDuration) {
+                                timeCurrent.textContent = formatTime(vid.currentTime);
+                                timeDuration.textContent = formatTime(vid.duration);
+                            }
+                        }
+                        btnPlay.textContent = vid.paused ? 'Play' : 'Pause';
+                        btnSound.textContent = vid.muted ? 'Unmute' : 'Mute';
+                    }
+                    progressLoopId = requestAnimationFrame(loop);
+                }
+                loop();
+            }
+
+            function stopProgressLoop() {
+                cancelAnimationFrame(progressLoopId);
+            }
+
+            const videoControls = document.querySelector('.video-controls');
+            const btnPlay = document.querySelector('.video-controls__play-pause');
+            const btnSound = document.querySelector('.video-controls__sound');
+            const progressWrap = document.querySelector('.video-controls__progress');
+            const btnHide = document.querySelector('.video-controls__less-more');
+
+            videoControls.addEventListener('click', e => e.stopPropagation());
+
+            btnPlay.addEventListener('click', () => {
+                const vid = document.getElementById('viewer-main-vid');
+                if (!vid) return;
+                vid.paused ? vid.play() : vid.pause();
+            });
+
+            btnSound.addEventListener('click', () => {
+                const vid = document.getElementById('viewer-main-vid');
+                if (!vid) return;
+                vid.muted = !vid.muted;
+            });
+
+            progressWrap.addEventListener('click', (e) => {
+                const vid = document.getElementById('viewer-main-vid');
+                if (!vid) return;
+                const rect = progressWrap.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                vid.currentTime = pos * vid.duration;
+            });
+
+            let isControlsHidden = false;
+            if (btnHide) {
+                btnHide.addEventListener('click', () => {
+                    isControlsHidden = !isControlsHidden;
+                    if (isControlsHidden) {
+                        btnPlay.style.display = 'none';
+                        btnSound.style.display = 'none';
+                        progressWrap.style.display = 'none';
+                        if (timeDisplay) timeDisplay.style.display = 'none';
+                        videoControls.style.justifyContent = 'flex-end';
+                        btnHide.textContent = 'Show';
+                    } else {
+                        btnPlay.style.display = '';
+                        btnSound.style.display = '';
+                        progressWrap.style.display = 'flex';
+                        if (timeDisplay) timeDisplay.style.display = '';
+                        videoControls.style.justifyContent = 'space-between';
+                        btnHide.textContent = 'Hide';
+                    }
+                });
+            }
+
+            document.querySelector('.view-image').addEventListener('click', (e) => {
+                e.stopPropagation();
+
+                const clickX = e.clientX;
+                const screenWidth = window.innerWidth;
+
+                if (clickX > screenWidth / 2) {
+                    if (currentViewerIndex < currentProjectFiles.length - 1) {
+                        currentViewerIndex++;
+                        updateViewerFrame();
+                    } else {
+                        document.querySelector('.view-image-wrapper').click();
+                    }
+                } else {
+                    if (currentViewerIndex > 0) {
+                        currentViewerIndex--;
+                        updateViewerFrame();
+                    } else {
+                        document.querySelector('.view-image-wrapper').click();
+                    }
+                }
+            });
+
+            document.querySelector('.view-image').addEventListener('mousemove', (e) => {
+                const screenWidth = window.innerWidth;
+                if (e.clientX > screenWidth / 2) {
+                    if (currentViewerIndex < currentProjectFiles.length - 1) {
+                        e.currentTarget.style.cursor = 'e-resize';
+                    } else {
+                        e.currentTarget.style.cursor = 'zoom-out';
+                    }
+                } else {
+                    if (currentViewerIndex > 0) {
+                        e.currentTarget.style.cursor = 'w-resize';
+                    } else {
+                        e.currentTarget.style.cursor = 'zoom-out';
+                    }
+                }
+            });
+
+            loadGalleryFromCloudinary()
+
             const infoCanvas = document.getElementById('info-background');
             const ictx = infoCanvas.getContext('2d');
             const $ = query => document.querySelector(query);
@@ -360,6 +909,11 @@
             const infoWrap = $(".information-wrapper");
             const lWrap = $(".left-wrapper");
             const rWrap = $(".right-wrapper");
+            const viewImageWrapper = $('.view-image-wrapper');
+            const viewImage = $('.view-image');
+            const viewImageText = $('.view-image__text');
+            const uiLayerBottom = $('.ui-layer__bottom');
+            const instructions = $('.instructions');
 
             let isInfoOpen = false;
 
@@ -367,7 +921,6 @@
                 infoWrap.classList.remove("is-visible");
                 isInfoOpen = false;
             };
-            infoWrap.onclick = e => e.stopPropagation();
             infoBtn.onclick = () => {
                 infoWrap.classList.add("is-visible");
                 isInfoOpen = true;
@@ -386,16 +939,36 @@
 
             lWrap.addEventListener("scroll", () => {
                 if (activeCol !== 'left') return;
+
+                const maxScrollL = Math.max(0, lWrap.scrollHeight - lWrap.clientHeight);
+                const maxScrollR = Math.max(0, rWrap.scrollHeight - rWrap.clientHeight);
+
                 targetLScroll = lWrap.scrollTop;
-                currentLScroll = lWrap.scrollTop;
-                targetRScroll = targetLScroll;
+                currentLScroll = targetLScroll;
+
+                if (maxScrollL > 0) {
+                    const progress = Math.max(0, Math.min(1, targetLScroll / maxScrollL));
+                    targetRScroll = progress * maxScrollR;
+                } else {
+                    targetRScroll = 0;
+                }
             }, { passive: true });
 
             rWrap.addEventListener("scroll", () => {
                 if (activeCol !== 'right') return;
+
+                const maxScrollL = Math.max(0, lWrap.scrollHeight - lWrap.clientHeight);
+                const maxScrollR = Math.max(0, rWrap.scrollHeight - rWrap.clientHeight);
+
                 targetRScroll = rWrap.scrollTop;
-                currentRScroll = rWrap.scrollTop;
-                targetLScroll = targetRScroll;
+                currentRScroll = targetRScroll;
+
+                if (maxScrollR > 0) {
+                    const progress = Math.max(0, Math.min(1, targetRScroll / maxScrollR));
+                    targetLScroll = progress * maxScrollL;
+                } else {
+                    targetLScroll = 0;
+                }
             }, { passive: true });
 
             (function renderLoop() {
@@ -403,7 +976,7 @@
                     const ease = 0.07;
 
                     let diffL = targetLScroll - currentLScroll;
-                    if (Math.abs(diffL) > 0.1) {
+                    if (Math.abs(diffL) > 0.3) {
                         currentLScroll += diffL * ease;
                         if (activeCol !== 'left') lWrap.scrollTop = currentLScroll;
                     } else {
@@ -411,7 +984,7 @@
                     }
 
                     let diffR = targetRScroll - currentRScroll;
-                    if (Math.abs(diffR) > 0.1) {
+                    if (Math.abs(diffR) > 0.3) {
                         currentRScroll += diffR * ease;
                         if (activeCol !== 'right') rWrap.scrollTop = currentRScroll;
                     } else {
@@ -424,10 +997,13 @@
             const topDesc = $('#top-image-description');
             const allImages = $$('.world-image');
 
+            let isViewerOpen = false;
+
             allImages.forEach(imgContainer => {
                 const imgElement = imgContainer.querySelector('img');
 
                 imgContainer.addEventListener('mouseenter', () => {
+                    if (isViewerOpen) return;
                     const description = imgElement.getAttribute('alt') || "";
                     topDesc.textContent = description;
                     topDesc.classList.add('is-visible');
@@ -436,6 +1012,46 @@
                 imgContainer.addEventListener('mouseleave', () => {
                     topDesc.classList.remove('is-visible');
                 });
+
+                imgContainer.addEventListener('click', () => {
+                    isViewerOpen = true;
+                    const imgSrc = imgElement.getAttribute('src');
+                    viewImage.innerHTML = `<img src="${imgSrc}" style="width: 100%; height: 100%; object-fit: contain;" alt="full-${imgSrc}">`;
+
+                    viewImageWrapper.classList.add('is-visible');
+                    gridOverlay.classList.add('is-visible');
+
+                    setTimeout(() => { viewImageText.classList.add('is-visible'); }, 550);
+                    setTimeout(() => { instructions.classList.add('is-hidden'); }, 150);
+
+                    if(uiLayerBottom) uiLayerBottom.classList.add('is-hidden');
+                    if(topDesc) topDesc.classList.remove('is-visible');
+                });
+            });
+
+            viewImageWrapper.addEventListener('click', () => {
+                isViewerOpen = false;
+
+                if(topDesc){
+                    topDesc.classList.remove('is-visible');
+                }
+
+                instructions.classList.remove('is-hidden');
+                uiLayerBottom.classList.remove('is-hidden');
+                viewImageText.classList.remove('is-visible');
+                viewImageWrapper.classList.remove('is-visible');
+                videoControls.classList.remove('is-visible');
+
+                gridOverlay.classList.remove('is-visible');
+
+                stopProgressLoop();
+                document.querySelectorAll('#world video').forEach(v => v.play());
+
+                setTimeout(() => {
+                    if (!viewImageWrapper.classList.contains('is-visible')) {
+                        viewImage.innerHTML = '';
+                    }
+                }, 600);
             });
 
             function drawGradient() {
@@ -446,7 +1062,7 @@
 
                 gradient.addColorStop(0, "#F61D3D");
                 gradient.addColorStop(0.1, "#F61D3D");
-                gradient.addColorStop(0.2, "#F61D3D");
+                gradient.addColorStop(0.1, "#F61D3D");
                 gradient.addColorStop(1, "#F61D3D");
 
                 ictx.fillStyle = gradient;
