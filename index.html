@@ -19,10 +19,27 @@
                 font-family: Helvetica Neue, Arial, system-ui, sans-serif;
                 font-weight: 500;
                 color: #1e1e21;
-                font-size: 14px;
+                font-size: 13px;
                 line-height: 1.15;
                 letter-spacing: .01em;
             }
+
+            #loader {
+                position: fixed;
+                inset: 0;
+                background-color: white;
+                z-index: 99999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #1e1e21;
+                transition: opacity 0.6s cubic-bezier(.77,0,.175,1);
+            }
+            #loader.is-hidden {
+                opacity: 0;
+                pointer-events: none;
+            }
+
             img {
                 height: 50vh;
                 display: block;
@@ -458,6 +475,11 @@
     </head>
 
     <body>
+        <!-- LOADER ELEMENT -->
+        <div id="loader">
+            <div id="loader-text">0%</div>
+        </div>
+
         <div id="viewport">
             <div class="video-controls">
 
@@ -621,11 +643,16 @@
                         })),
                     ];
                     const allMedia = [...videoMedia, ...imageMedia];
+
                     if (allMedia.length > 0) {
                         renderGallery(allMedia);
+                        trackLoading(); // Вызов отслеживания загрузки
+                    } else {
+                        hideLoader();
                     }
                 } catch (err) {
                     console.error("API:", err);
+                    hideLoader();
                 }
             }
 
@@ -674,6 +701,58 @@
                         wrapper.style.cursor = 'default';
                     }
                 });
+            }
+
+            function trackLoading() {
+                const images = Array.from(document.querySelectorAll('#world img'));
+                const videos = Array.from(document.querySelectorAll('#world video'));
+                const totalAssets = images.length + videos.length;
+                let loadedAssets = 0;
+
+                if (totalAssets === 0) {
+                    hideLoader();
+                    return;
+                }
+
+                const updateProgress = () => {
+                    loadedAssets++;
+                    const percent = Math.floor((loadedAssets / totalAssets) * 100);
+                    const loaderText = document.getElementById('loader-text');
+                    if (loaderText) {
+                        loaderText.innerText = `${percent}%`;
+                    }
+                    if (loadedAssets >= totalAssets) {
+                        setTimeout(hideLoader, 400);
+                    }
+                };
+
+                images.forEach(img => {
+                    if (img.complete) {
+                        updateProgress();
+                    } else {
+                        img.addEventListener('load', updateProgress);
+                        img.addEventListener('error', updateProgress);
+                    }
+                });
+
+                videos.forEach(vid => {
+                    if (vid.readyState >= 3) {
+                        updateProgress();
+                    } else {
+                        vid.addEventListener('loadeddata', updateProgress);
+                        vid.addEventListener('error', updateProgress);
+                    }
+                });
+            }
+
+            function hideLoader() {
+                const loader = document.getElementById('loader');
+                if (loader) {
+                    loader.classList.add('is-hidden');
+                    setTimeout(() => {
+                        loader.remove();
+                    }, 600);
+                }
             }
 
             async function openProject(projectTag, initialType, initialUrl) {
@@ -804,7 +883,7 @@
                     controls.classList.remove('is-visible');
                     controls.style.display = 'none';
 
-                    const lowResUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_100,q_50,f_auto/${file.public_id}.${file.format}`;
+                    const lowResUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_100,q_10,f_auto/${file.public_id}.${file.format}`;
                     const highResUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto/${file.public_id}.${file.format}`;
 
                     let imgEl = document.getElementById('viewer-main-img');
@@ -937,7 +1016,7 @@
                 });
             }
 
-            loadGalleryFromCloudinary()
+            loadGalleryFromCloudinary();
 
             const infoCanvas = document.getElementById('info-background');
             const ictx = infoCanvas.getContext('2d');
