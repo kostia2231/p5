@@ -3,7 +3,30 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Mariia Kvasnevska</title>
+        <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
         <style>
+            .text-mask {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                overflow: hidden;
+                height: fit-content;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #animated-text {
+            }
+
+            #loader-text {
+                position: absolute;
+                top: 5px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
             @font-face {
                 font-family: "fOnT";
                 src: url("font/KTF2101-Regular.otf") format("opentype");
@@ -29,12 +52,10 @@
                 inset: 0;
                 background-color: white;
                 z-index: 99999;
-                display: flex;
-                align-items: center;
-                justify-content: center;
                 color: #1e1e21;
                 transition: opacity 0.6s cubic-bezier(.77,0,.175,1);
             }
+
             #loader.is-hidden {
                 opacity: 0;
                 pointer-events: none;
@@ -475,9 +496,13 @@
     </head>
 
     <body>
-        <!-- LOADER ELEMENT -->
+        <!-- LOADER  -->
         <div id="loader">
             <div id="loader-text">0%</div>
+            <div class="text-mask">
+                <span id="animated-text">Mariia Kvasnevska</span>
+            </div>
+            <div></div>
         </div>
 
         <div id="viewport">
@@ -576,8 +601,85 @@
         </div>
 
         <script>
+            let isAssetsLoaded = false;
+            let isTextCycleDone = false;
+            let isLoaderHidden = false;
+            let rollerTimer;
 
+            function checkReveal() {
+                if (isAssetsLoaded && isTextCycleDone && !isLoaderHidden) {
+                    isLoaderHidden = true;
+                    setTimeout(hideLoader, 400);
+                }
+            }
+
+            function initTextRoller(selector, wordsList, interval, moveDistance) {
+                const el = document.querySelector(selector);
+                if (!el || wordsList.length === 0) {
+                    isTextCycleDone = true;
+                    checkReveal();
+                    return;
+                }
+
+                if (wordsList.length <= 1) {
+                    isTextCycleDone = true;
+                }
+
+                let currentIndex = 0;
+                let swapCount = 0;
+                el.innerText = wordsList[currentIndex];
+
+                function swapText() {
+                    if (!document.body.contains(el)) return;
+
+                    const tl = gsap.timeline();
+
+                    tl.to(el, {
+                        y: -moveDistance,
+                        opacity: 0,
+                        duration: 0.3,
+                        ease: "power3.in",
+                        onComplete: () => {
+                            currentIndex = (currentIndex + 1) % wordsList.length;
+                            el.innerText = wordsList[currentIndex];
+                        }
+                    })
+                    .set(el, { y: moveDistance })
+                    .to(el, {
+                        y: 0,
+                        opacity: 1,
+                        duration: 0.4,
+                        ease: "power4.out",
+                        onComplete: () => {
+                            swapCount++;
+                            if (swapCount === wordsList.length - 1) {
+                                isTextCycleDone = true;
+                                checkReveal();
+                            }
+                        }
+                    });
+
+                    rollerTimer = gsap.delayedCall(interval, swapText);
+                }
+
+                rollerTimer = gsap.delayedCall(interval, swapText);
+            }
+
+            const myWords = ["Mariia Kvasnevska", "Creative Producer", "Stylist", "Art Director",];
+            initTextRoller('#animated-text', myWords, 0.8, 30);
+
+            //
+            const CLOUD_NAME = "dfzw4p8ez";
+            const TAG_NAME = "portfolio";
+
+            const gridOverlay = document.querySelector('.grid-overlay');
             const closeBtn = document.querySelector('.view-image__text__close');
+            let lastMouseX = window.innerWidth / 2;
+
+            let currentProjectFiles = [];
+            let currentViewerIndex = 0;
+
+            let progressLoopId;
 
             if (closeBtn) {
                 closeBtn.addEventListener('click', (e) => {
@@ -586,34 +688,9 @@
                 });
             }
 
-            let lastMouseX = window.innerWidth / 2;
-
             window.addEventListener('mousemove', (e) => {
                 lastMouseX = e.clientX;
             });
-
-            function updateViewerCursor() {
-                const prevArea = document.querySelector('.viewer-prev');
-                const nextArea = document.querySelector('.viewer-next');
-                const wrapper = document.querySelector('.view-image-wrapper');
-
-                if (!prevArea || !nextArea || !wrapper) return;
-
-                if (currentProjectFiles.length > 1) {
-                    prevArea.style.cursor = currentViewerIndex > 0 ? 'w-resize' : 'zoom-out';
-                    nextArea.style.cursor = currentViewerIndex < currentProjectFiles.length - 1 ? 'e-resize' : 'zoom-out';
-                } else {
-                    prevArea.style.cursor = 'zoom-out';
-                    nextArea.style.cursor = 'zoom-out';
-                }
-
-                wrapper.style.cursor = '';
-            }
-
-            const CLOUD_NAME = "dfzw4p8ez";
-            const TAG_NAME = "portfolio";
-
-            const gridOverlay = document.querySelector('.grid-overlay');
 
             async function loadGalleryFromCloudinary() {
                 const videoUrl = `https://res.cloudinary.com/${CLOUD_NAME}/video/list/${TAG_NAME}.json`;
@@ -646,14 +723,114 @@
 
                     if (allMedia.length > 0) {
                         renderGallery(allMedia);
-                        trackLoading(); // Вызов отслеживания загрузки
+                        trackLoading();
                     } else {
-                        hideLoader();
+                        isAssetsLoaded = true;
+                        checkReveal();
                     }
                 } catch (err) {
                     console.error("API:", err);
-                    hideLoader();
+                    initTextRoller('#animated-text', myWords, 1.2, 30);
+                    isAssetsLoaded = true;
+                    checkReveal();
                 }
+            }
+
+            async function openProject(projectTag, initialType, initialUrl) {
+                isViewerOpen = true;
+
+                const viewImageWrapperLocal = document.querySelector('.view-image-wrapper');
+                const viewImageTextLocal = document.querySelector('.view-image__text');
+                const viewImageLocal = document.querySelector('.view-image');
+                const controls = document.querySelector('.video-controls');
+
+                document.querySelector('.project-title-ui').textContent = projectTag;
+
+                if (initialType === 'video') {
+                    controls.style.display = 'flex';
+                    viewImageLocal.innerHTML = `<video id="viewer-main-vid" src="${initialUrl}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:contain;"></video>`;
+                } else {
+                    controls.style.display = 'none';
+                    viewImageLocal.innerHTML = `<img id="viewer-main-img" src="${initialUrl}" style="width:100%; height:100%; object-fit:contain;">`;
+                }
+
+                document.querySelectorAll('#world video').forEach(v => v.pause());
+
+                const videoUrl = `https://res.cloudinary.com/${CLOUD_NAME}/video/list/${projectTag}.json`;
+                const imageUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/list/${projectTag}.json`;
+
+                try {
+                    const [vRes, iRes] = await Promise.all([
+                        fetch(videoUrl).then(r => r.ok ? r.json() : { resources: [] }),
+                        fetch(imageUrl).then(r => r.ok ? r.json() : { resources: [] })
+                    ]);
+
+                    const projectFiles = [
+                        ...vRes.resources.map(item => ({ ...item, type: 'video' })),
+                        ...iRes.resources.map(item => ({ ...item, type: 'image' }))
+                    ];
+
+                    projectFiles.sort((a, b) => a.public_id.localeCompare(b.public_id));
+
+                    if (projectFiles.length > 0) {
+                        renderFileInViewer(projectFiles);
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                }
+
+                viewImageWrapperLocal.classList.add('is-visible');
+                gridOverlay.classList.add('is-visible');
+
+                document.querySelector('.viewer-prev').style.display = 'block';
+                document.querySelector('.viewer-next').style.display = 'block';
+
+                setTimeout(() => {
+                    if (!isViewerOpen) return;
+
+                    viewImageTextLocal.classList.add('is-visible');
+                    if (controls.style.display === 'flex') {
+                        controls.classList.add('is-visible');
+                    }
+                }, 550);
+
+                startProgressLoop();
+
+                const instructionsLocal = document.querySelector('.instructions');
+                const uiLayerBottomLocal = document.querySelector('.ui-layer__bottom');
+                const topDescLocal = document.querySelector('#top-image-description');
+
+                setTimeout(() => {
+                    if (!isViewerOpen) return;
+                    instructionsLocal.classList.add('is-hidden');
+                }, 150);
+                if(uiLayerBottomLocal){
+                    uiLayerBottomLocal.classList.add('is-hidden');
+                }
+                if(topDescLocal){
+                    topDescLocal.classList.remove('is-visible');
+                }
+
+                updateViewerCursor();
+            }
+
+            function updateViewerCursor() {
+                const prevArea = document.querySelector('.viewer-prev');
+                const nextArea = document.querySelector('.viewer-next');
+                const wrapper = document.querySelector('.view-image-wrapper');
+
+                if (!prevArea || !nextArea || !wrapper) return;
+
+                if (currentProjectFiles.length > 1) {
+                    prevArea.style.cursor = currentViewerIndex > 0 ? 'w-resize' : 'zoom-out';
+                    nextArea.style.cursor = currentViewerIndex < currentProjectFiles.length - 1 ? 'e-resize' : 'zoom-out';
+                } else {
+                    prevArea.style.cursor = 'zoom-out';
+                    nextArea.style.cursor = 'zoom-out';
+                }
+
+                wrapper.style.cursor = '';
             }
 
             function renderGallery(items) {
@@ -756,7 +933,8 @@
                     if (currentProgress < 100) {
                         requestAnimationFrame(animateLoader);
                     } else {
-                        setTimeout(hideLoader, 400);
+                        isAssetsLoaded = true;
+                        checkReveal();
                     }
                 }
 
@@ -767,93 +945,16 @@
                 const loader = document.getElementById('loader');
                 if (loader) {
                     loader.classList.add('is-hidden');
+
+                    // Убиваем таймер и любые остаточные анимации, чтобы не засорять память
+                    if (rollerTimer) rollerTimer.kill();
+                    gsap.killTweensOf('#animated-text');
+
                     setTimeout(() => {
                         loader.remove();
                     }, 600);
                 }
             }
-
-            async function openProject(projectTag, initialType, initialUrl) {
-                isViewerOpen = true;
-
-                const viewImageWrapperLocal = document.querySelector('.view-image-wrapper');
-                const viewImageTextLocal = document.querySelector('.view-image__text');
-                const viewImageLocal = document.querySelector('.view-image');
-                const controls = document.querySelector('.video-controls');
-
-                document.querySelector('.project-title-ui').textContent = projectTag;
-
-                if (initialType === 'video') {
-                    controls.style.display = 'flex';
-                    viewImageLocal.innerHTML = `<video id="viewer-main-vid" src="${initialUrl}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:contain;"></video>`;
-                } else {
-                    controls.style.display = 'none';
-                    viewImageLocal.innerHTML = `<img id="viewer-main-img" src="${initialUrl}" style="width:100%; height:100%; object-fit:contain;">`;
-                }
-
-                document.querySelectorAll('#world video').forEach(v => v.pause());
-
-                const videoUrl = `https://res.cloudinary.com/${CLOUD_NAME}/video/list/${projectTag}.json`;
-                const imageUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/list/${projectTag}.json`;
-
-                try {
-                    const [vRes, iRes] = await Promise.all([
-                        fetch(videoUrl).then(r => r.ok ? r.json() : { resources: [] }),
-                        fetch(imageUrl).then(r => r.ok ? r.json() : { resources: [] })
-                    ]);
-
-                    const projectFiles = [
-                        ...vRes.resources.map(item => ({ ...item, type: 'video' })),
-                        ...iRes.resources.map(item => ({ ...item, type: 'image' }))
-                    ];
-
-                    projectFiles.sort((a, b) => a.public_id.localeCompare(b.public_id));
-
-                    if (projectFiles.length > 0) {
-                        renderFileInViewer(projectFiles);
-                    }
-
-                } catch (err) {
-                    console.error(err);
-                }
-
-                viewImageWrapperLocal.classList.add('is-visible');
-                gridOverlay.classList.add('is-visible');
-
-                document.querySelector('.viewer-prev').style.display = 'block';
-                document.querySelector('.viewer-next').style.display = 'block';
-
-                setTimeout(() => {
-                    if (!isViewerOpen) return;
-
-                    viewImageTextLocal.classList.add('is-visible');
-                    if (controls.style.display === 'flex') {
-                        controls.classList.add('is-visible');
-                    }
-                }, 550);
-
-                startProgressLoop();
-
-                const instructionsLocal = document.querySelector('.instructions');
-                const uiLayerBottomLocal = document.querySelector('.ui-layer__bottom');
-                const topDescLocal = document.querySelector('#top-image-description');
-
-                setTimeout(() => {
-                    if (!isViewerOpen) return;
-                    instructionsLocal.classList.add('is-hidden');
-                }, 150);
-                if(uiLayerBottomLocal){
-                    uiLayerBottomLocal.classList.add('is-hidden');
-                }
-                if(topDescLocal){
-                    topDescLocal.classList.remove('is-visible');
-                }
-
-                updateViewerCursor();
-            }
-
-            let currentProjectFiles = [];
-            let currentViewerIndex = 0;
 
             function renderFileInViewer(files) {
                 currentProjectFiles = files;
@@ -949,8 +1050,6 @@
                 const seconds = Math.floor(timeInSeconds % 60);
                 return `${minutes}:${seconds.toString().padStart(2, '0')}`;
             }
-
-            let progressLoopId;
 
             function startProgressLoop() {
                 function loop() {
