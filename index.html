@@ -707,42 +707,60 @@
                 const images = Array.from(document.querySelectorAll('#world img'));
                 const videos = Array.from(document.querySelectorAll('#world video'));
                 const totalAssets = images.length + videos.length;
+
                 let loadedAssets = 0;
+                let targetProgress = 0;
+                let currentProgress = 0;
 
                 if (totalAssets === 0) {
-                    hideLoader();
-                    return;
+                    targetProgress = 100;
                 }
 
-                const updateProgress = () => {
+                const updateTarget = () => {
                     loadedAssets++;
-                    const percent = Math.floor((loadedAssets / totalAssets) * 100);
-                    const loaderText = document.getElementById('loader-text');
-                    if (loaderText) {
-                        loaderText.innerText = `${percent}%`;
-                    }
-                    if (loadedAssets >= totalAssets) {
-                        setTimeout(hideLoader, 400);
-                    }
+                    targetProgress = Math.floor((loadedAssets / totalAssets) * 100);
                 };
 
                 images.forEach(img => {
                     if (img.complete) {
-                        updateProgress();
+                        updateTarget();
                     } else {
-                        img.addEventListener('load', updateProgress);
-                        img.addEventListener('error', updateProgress);
+                        img.addEventListener('load', updateTarget);
+                        img.addEventListener('error', updateTarget);
                     }
                 });
 
                 videos.forEach(vid => {
                     if (vid.readyState >= 3) {
-                        updateProgress();
+                        updateTarget();
                     } else {
-                        vid.addEventListener('loadeddata', updateProgress);
-                        vid.addEventListener('error', updateProgress);
+                        vid.addEventListener('loadeddata', updateTarget);
+                        vid.addEventListener('error', updateTarget);
                     }
                 });
+
+                function animateLoader() {
+                    if (currentProgress < targetProgress) {
+                        currentProgress += Math.max(1, (targetProgress - currentProgress) * 0.1);
+                    }
+
+                    if (currentProgress > 100) {
+                        currentProgress = 100;
+                    }
+
+                    const loaderText = document.getElementById('loader-text');
+                    if (loaderText) {
+                        loaderText.innerText = `${Math.floor(currentProgress)}%`;
+                    }
+
+                    if (currentProgress < 100) {
+                        requestAnimationFrame(animateLoader);
+                    } else {
+                        setTimeout(hideLoader, 400);
+                    }
+                }
+
+                requestAnimationFrame(animateLoader);
             }
 
             function hideLoader() {
