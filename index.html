@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="ru">
     <head>
         <meta charset="UTF-8">
@@ -5,6 +6,98 @@
         <title>Mariia Kvasnevska</title>
         <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
         <style>
+            * {
+                box-sizing: border-box;
+            }
+            .index-wrapper {
+                position: fixed;
+                inset: 0;
+                z-index: 10;
+                height: 100vh;
+                height: 100dvh;
+                width: 100vw;
+                visibility: hidden;
+                opacity: 0;
+                padding: 0;
+                overflow-y: auto;
+                box-sizing: border-box;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+
+            .index-wrapper.is-visible {
+                visibility: visible;
+                opacity: 1;
+            }
+
+            .index-content {
+                padding: 5px;
+                width: 100%;
+                min-height: 100%;
+                box-sizing: border-box;
+                color: rgba(32, 32, 32, 1);
+            }
+
+            .index-close {
+                display: inline-block;
+                font-size: 15px;
+                font-weight: 500;
+                cursor: pointer;
+                margin-bottom: 40px;
+            }
+
+            /* Стили для списка проектов */
+            #index-project-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* Строка отдельного проекта */
+            .index-project-row {
+                padding-bottom: 5px;
+                display: flex;
+                flex-direction: row;
+                cursor: pointer;
+            }
+
+            .index-text{
+                padding: 5px;
+                visibility: hidden;
+                display: none;
+            }
+
+            .index-project-row:hover .index-text{
+                display: inline-block;
+                visibility: visible;
+            }
+
+            /* Лента миниатюр */
+            .index-thumbnails {
+                display: flex;
+                flex-direction: row;
+                height: 110px;
+                gap: 5px;
+            }
+
+            .index-thumbnails img {
+                height: 100%;
+                width: auto;
+                object-fit: cover;
+                display: block;
+            }
+
+            /* Текст названия проекта */
+            .index-project-title {
+
+            }
+
+            .contacts{
+                padding: 5px;
+                width: 100%;
+                text-align: center;
+            }
             .text-mask {
                 position: absolute;
                 top: 50%;
@@ -22,7 +115,7 @@
 
             #loader-text {
                 position: absolute;
-                top: 5px;
+                top: 10px;
                 left: 50%;
                 transform: translateX(-50%);
             }
@@ -41,8 +134,8 @@
                 background-color: white;
                 font-family: Helvetica Neue, Arial, system-ui, sans-serif;
                 font-weight: 500;
-                color: #1e1e21;
-                font-size: 13px;
+                color: rgba(32, 32, 32, 1);
+                font-size: 14px;
                 line-height: 1.15;
                 letter-spacing: .01em;
             }
@@ -52,7 +145,7 @@
                 inset: 0;
                 background-color: white;
                 z-index: 99999;
-                color: #1e1e21;
+                color: rgba(32, 32, 32, 1);
                 transition: opacity 0.6s cubic-bezier(.77,0,.175,1);
             }
 
@@ -62,7 +155,7 @@
             }
 
             img {
-                height: 50vh;
+                height: 40vh;
                 display: block;
             }
             video {
@@ -137,7 +230,7 @@
                 position: absolute;
                 top: 5px;
                 left: 5px;
-                color: #1e1e21;
+                color: rgba(32, 32, 32, 1);
                 z-index: -1;
             }
 
@@ -145,7 +238,7 @@
                 position: absolute;
                 inset: 0;
                 background-color: white;
-                z-index: 80;
+                z-index: 9;
                 opacity: 0;
                 pointer-events: none;
                 transition: opacity 0.6s cubic-bezier(.77,0,.175,1);
@@ -187,7 +280,7 @@
                 display: grid;
                 grid-template-columns: repeat(1, 1fr);
                 z-index: 90;
-                padding: 5px;
+                padding: 10px;
                 text-align: center;
             }
             .ui-layer__bottom {
@@ -199,10 +292,10 @@
                 justify-content: center;
                 gap: 5px;
                 z-index: 90;
-                padding: 5px;
+                padding: 10px;
                 box-sizing: border-box;
                 cursor: pointer;
-                color: #1e1e21;
+                color: rgba(32, 32, 32, 1);
                 font-weight: 500;
 
                 opacity: 1;
@@ -236,7 +329,7 @@
                 background-color: #F61D3D;
             }
             .btn-custom__inner {
-                color: #1e1e21;
+                color: rgba(32, 32, 32, 1);
             }
             .instructions {
                 position: fixed;
@@ -258,11 +351,11 @@
                 padding-bottom: 2.5px;
                 width: 1px;
                 height: 100%;
-                background-color: #1e1e21;
+                background-color: rgba(32, 32, 32, 1);
                 pointer-events: none;
             }
             .title {
-                color: #1e1e21;
+                color: rgba(32, 32, 32, 1);
             }
             .color-box {
                 background-color: #FFFDCF;
@@ -272,8 +365,8 @@
                 inset: 0;
                 z-index: 99;
                 padding: 5px;
-                font-size: 66px;
-                font-weight: 500;
+                font-size: 64px;
+                font-weight: 400;
                 height: 100vh;
                 height: 100dvh;
                 width: 100vw;
@@ -296,13 +389,14 @@
             .information-wrapper.is-visible {
                 visibility: visible;
                 opacity: 1;
+                cursor: zoom-out;
             }
             #info-background {
                 position: fixed;
                 top: 0;
                 left: 0;
                 width: 100vw;
-                height: 100vw;
+                height: 100vh;
                 z-index: -1;
                 pointer-events: none;
             }
@@ -331,7 +425,7 @@
             #top-image-description {
                 position: fixed;
                 top: 0;
-                padding: 5px;
+                padding: 10px;
                 left: 50%;
                 transform: translateX(-50%);
                 z-index: 1000;
@@ -349,6 +443,7 @@
                 transform: translate3d(0, 110%, 0);
                 transition: transform 0.6s cubic-bezier(.77,0,.175,1);
                 will-change: transform;
+                backface-visibility: hidden;
             }
             .view-image-wrapper.is-visible {
                 transform: translate3d(0, 0, 0);
@@ -371,12 +466,12 @@
                 align-items: center;
                 justify-content: space-between;
                 gap: 5px;
-                padding: 5px;
+                padding: 10px;
                 box-sizing: border-box;
 
                 pointer-events: none;
 
-                color: #1e1e21;
+                color: rgba(32, 32, 32, 1);
                 font-weight: 500;
                 z-index: 110;
             }
@@ -386,7 +481,6 @@
                 text-align: left;
                 display: flex;
                 flex-direction: column;
-                padding: 5px;
             }
             .view-image__text.is-visible{
                 transition: opacity 0.2s cubic-bezier(.77,0,.175,1);
@@ -403,12 +497,13 @@
                 width: 100%;
                 z-index: 110;
                 opacity: 0;
-
                 pointer-events: none;
+                transition: opacity 0.4s ease;
             }
             .video-controls.is-visible {
                 opacity: 1;
                 pointer-events: auto;
+                cursor: pointer;
             }
             .video-controls > * {
                 pointer-events: auto;
@@ -428,7 +523,7 @@
                 margin-right: 5px;
             }
             .video-controls__play-pause{
-                margin-left: 5px;
+                margin-left: 15px;
                 margin-right: 5px;
                 transition: color 0.3s cubic-bezier(.77,0,.175,1), padding 0.3s linear;
             }
@@ -462,10 +557,11 @@
                 align-items: center;
                 gap: 10px;
                 margin-left: 5px;
-                margin-right: 5px;
+                margin-right: 15px;
             }
             .video-controls__time-duration{
-                color: rgba(0, 0, 0, 0.3);
+                color: rgba(32, 32, 32, 1);
+                opacity: 0.6;
             }
             .viewer-nav {
                 position: fixed;
@@ -496,7 +592,6 @@
     </head>
 
     <body>
-        <!-- LOADER  -->
         <div id="loader">
             <div id="loader-text">0%</div>
             <div class="text-mask">
@@ -507,12 +602,11 @@
 
         <div id="viewport">
             <div class="video-controls">
-
                 <div class="video-controls__play-pause">Pause</div>
                 <div class="video-controls__sound">Unmute</div>
-                <div class="video-controls__progress" style="flex-grow: 1; margin: 0 10px; position: relative; height: 1px; display: flex; align-items: center; cursor: pointer; background-color: rgba(0, 0, 0, 0.1);">
+                <div class="video-controls__progress" style="flex-grow: 1; margin: 0 5px; position: relative; height: 1px; display: flex; align-items: center; cursor: pointer; background-color: rgba(0, 0, 0, 0.1);">
                     <div style="width: 100%; height: 1px;">
-                        <div class="video-controls__progress-bar" style="width: 0%; height: 100%; background-color: #1e1e21; will-change: width;"></div>
+                        <div class="video-controls__progress-bar" style="width: 0%; height: 100%; background-color: rgba(32, 32, 32, 1); will-change: width;"></div>
                     </div>
                 </div>
                 <div class="video-controls__time">
@@ -523,7 +617,6 @@
 
             <div class="view-image__text">
                 <div class="view-image__text__close">Close</div>
-
                 <div class="view-image__text__inner">
                     <div>
                         <div>
@@ -547,9 +640,16 @@
                 <canvas id="info-background" width="1920" height="968"></canvas>
                 <div id="information" class="information">
                     <div>
-                        <span class="color-box">Creative Producer</span>,
-                        <span class="color-box">Stylist</span>,
-                        <span class="color-box">Art Director</span>.<br><br>
+                        <span class="">Creative Producer</span>,
+                        <span class="">Stylist</span>,
+                        <span class="">Art Director</span>.<br>
+                        Born in Ukraine; based in Berlin
+                        <br><br>
+                        As a stylist and costume designer, she has worked on campaigns and lookbooks ( e-commerce) featured in Vogue UA, Elle UA, 10 Magazines DE, and Kaltblut. Her portfolio includes commercial projects for BMW and various music videos. She worked with brands such as Jacquemus, Mugler, Alexander Wang, Coperni, Stella McCartney, Proenza Schouler, Isabel Marant, Ami Paris, and MISBHV, alongside Ukrainian labels Paskal, Gudu and so on. She also works extensively with jewelry brands, including Panconesi, Completedworks, La2l, and Rimmart.
+                        <br><br>
+                        Her production experience covers a wide range of events, from launching educational courses to organizing art exhibitions, including her work as executive producer for the Poligon Project—a community and art exhibition for emerging Ukrainian artists. Currently based in Berlin, she works in the retail sector, bringing expertise in offline marketing and visual merchandising to the management of multiple retail locations, focusing on the intersection of brand identity and sales performance.
+                        <br><br>
+                        Her visual language is shaped by two distinct sources of inspiration: a lifelong background in movement and dance, which informs how she anchors imagery through the body, and the raw, rebellious energy of the Ukrainian youth cultural scene.
                     </div>
                 </div>
             </div>
@@ -569,7 +669,7 @@
                 <div class="ui-layer__cat-navigation">
                     <div class="title">© Mariia Kvasnevska</div>
                     <div class="divider"></div>
-                    <div class="btn-custom__background"><div class="btn-custom__inner">Index</div></div>
+                    <div id="index-btn" class="btn-custom__background"><div class="btn-custom__inner">Index</div></div>
                     <div class="divider"></div>
                     <div class="btn-custom__background"><div class="btn-custom__inner">Photography</div></div>
                     <div class="divider"></div>
@@ -589,6 +689,16 @@
 
                     <div class="col-wrapper right-wrapper">
                         <div class="right"></div>
+                    </div>
+                </div>
+
+                <div class="index-wrapper">
+                    <div class="index-content">
+                        <!--<div class="index-close btn-custom__background">
+                            <div class="btn-custom__inner">Close Index</div>
+                        </div>-->
+
+                        <ul id="index-project-list"></ul>
                     </div>
                 </div>
             </div>
@@ -637,7 +747,7 @@
                     tl.to(el, {
                         y: -moveDistance,
                         opacity: 0,
-                        duration: 0.3,
+                        duration: 0.5,
                         ease: "power3.in",
                         onComplete: () => {
                             currentIndex = (currentIndex + 1) % wordsList.length;
@@ -648,7 +758,7 @@
                     .to(el, {
                         y: 0,
                         opacity: 1,
-                        duration: 0.4,
+                        duration: 0.5,
                         ease: "power4.out",
                         onComplete: () => {
                             swapCount++;
@@ -666,9 +776,8 @@
             }
 
             const myWords = ["Mariia Kvasnevska", "Creative Producer", "Stylist", "Art Director",];
-            initTextRoller('#animated-text', myWords, 0.8, 30);
+            initTextRoller('#animated-text', myWords, 1, 40);
 
-            //
             const CLOUD_NAME = "dfzw4p8ez";
             const TAG_NAME = "portfolio";
 
@@ -723,6 +832,7 @@
 
                     if (allMedia.length > 0) {
                         renderGallery(allMedia);
+                        renderIndex(allMedia); // Генерируем страницу Index
                         trackLoading();
                     } else {
                         isAssetsLoaded = true;
@@ -730,7 +840,6 @@
                     }
                 } catch (err) {
                     console.error("API:", err);
-                    initTextRoller('#animated-text', myWords, 1.2, 30);
                     isAssetsLoaded = true;
                     checkReveal();
                 }
@@ -748,7 +857,7 @@
 
                 if (initialType === 'video') {
                     controls.style.display = 'flex';
-                    viewImageLocal.innerHTML = `<video id="viewer-main-vid" src="${initialUrl}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:contain;"></video>`;
+                    viewImageLocal.innerHTML = `<video id="viewer-main-vid" src="${initialUrl}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit: contain;"></video>`;
                 } else {
                     controls.style.display = 'none';
                     viewImageLocal.innerHTML = `<img id="viewer-main-img" src="${initialUrl}" style="width:100%; height:100%; object-fit:contain;">`;
@@ -880,6 +989,79 @@
                 });
             }
 
+            // === ФУНКЦИЯ ДЛЯ ГЕНЕРАЦИИ ЭКРАНА INDEX (С ПОЛУЧЕНИЕМ ВСЕХ ФОТО/ВИДЕО ПРОЕКТА) ===
+            function renderIndex(allMedia) {
+                const indexList = document.querySelector('#index-project-list');
+                if (!indexList) return;
+
+                const projectsMap = new Map();
+
+                // Собираем уникальные названия проектов и их "обложки"
+                allMedia.forEach(item => {
+                    const projectTag = item.context?.custom?.caption;
+                    if (projectTag) {
+                        if (!projectsMap.has(projectTag)) {
+                            projectsMap.set(projectTag, item);
+                        }
+                    }
+                });
+
+                indexList.innerHTML = '';
+
+                projectsMap.forEach((coverItem, projectTag) => {
+                    const li = document.createElement('li');
+                    li.className = 'index-project-row';
+
+                    // Шаблон строки: пустой контейнер для миниатюр + текст
+                    li.innerHTML = `
+                        <div class="index-text">${projectTag}</div>
+                        <div class="index-thumbnails"></div>
+                    `;
+
+                    li.addEventListener('click', (e) => {
+                        e.stopPropagation();
+
+                        document.querySelector('.index-wrapper').classList.remove('is-visible');
+
+                        const mediaUrl = coverItem.type === 'video'
+                            ? `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/${coverItem.public_id}.${coverItem.format}`
+                            : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${coverItem.public_id}.${coverItem.format}`;
+
+                        openProject(projectTag, coverItem.type, mediaUrl);
+                    });
+
+                    indexList.appendChild(li);
+
+                    // Фоновый запрос всех файлов для этого проекта
+                    const videoUrl = `https://res.cloudinary.com/${CLOUD_NAME}/video/list/${projectTag}.json`;
+                    const imageUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/list/${projectTag}.json`;
+
+                    Promise.all([
+                        fetch(videoUrl).then(r => r.ok ? r.json() : { resources: [] }),
+                        fetch(imageUrl).then(r => r.ok ? r.json() : { resources: [] })
+                    ]).then(([vRes, iRes]) => {
+                        const projectFiles = [
+                            ...vRes.resources.map(item => ({ ...item, type: 'video' })),
+                            ...iRes.resources.map(item => ({ ...item, type: 'image' }))
+                        ];
+                        projectFiles.sort((a, b) => a.public_id.localeCompare(b.public_id));
+
+                        const thumbContainer = li.querySelector('.index-thumbnails');
+
+                        if (projectFiles.length > 0) {
+                            let thumbnailsHTML = '';
+                            projectFiles.forEach(file => {
+                                let thumbUrl = file.type === 'video'
+                                    ? `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/w_100,q_20/${file.public_id}.jpg`
+                                    : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_100,q_20/${file.public_id}.${file.format}`;
+                                thumbnailsHTML += `<img src="${thumbUrl}" alt="" loading="lazy">`;
+                            });
+                            thumbContainer.innerHTML = thumbnailsHTML;
+                        }
+                    }).catch(err => console.error("Ошибка загрузки миниатюр: ", err));
+                });
+            }
+
             function trackLoading() {
                 const images = Array.from(document.querySelectorAll('#world img'));
                 const videos = Array.from(document.querySelectorAll('#world video'));
@@ -946,7 +1128,6 @@
                 if (loader) {
                     loader.classList.add('is-hidden');
 
-                    // Убиваем таймер и любые остаточные анимации, чтобы не засорять память
                     if (rollerTimer) rollerTimer.kill();
                     gsap.killTweensOf('#animated-text');
 
@@ -1087,7 +1268,6 @@
             const btnPlay = document.querySelector('.video-controls__play-pause');
             const btnSound = document.querySelector('.video-controls__sound');
             const progressWrap = document.querySelector('.video-controls__progress');
-            const btnHide = document.querySelector('.video-controls__less-more');
 
             videoControls.addEventListener('click', e => e.stopPropagation());
 
@@ -1110,28 +1290,6 @@
                 const pos = (e.clientX - rect.left) / rect.width;
                 vid.currentTime = pos * vid.duration;
             });
-
-            let isControlsHidden = false;
-            if (btnHide) {
-                btnHide.addEventListener('click', () => {
-                    isControlsHidden = !isControlsHidden;
-                    if (isControlsHidden) {
-                        btnPlay.style.display = 'none';
-                        btnSound.style.display = 'none';
-                        progressWrap.style.display = 'none';
-                        if (timeDisplay) timeDisplay.style.display = 'none';
-                        videoControls.style.justifyContent = 'flex-end';
-                        btnHide.textContent = 'Show';
-                    } else {
-                        btnPlay.style.display = '';
-                        btnSound.style.display = '';
-                        progressWrap.style.display = 'flex';
-                        if (timeDisplay) timeDisplay.style.display = '';
-                        videoControls.style.justifyContent = 'space-between';
-                        btnHide.textContent = 'Hide';
-                    }
-                });
-            }
 
             loadGalleryFromCloudinary();
 
@@ -1298,6 +1456,10 @@
                 setTimeout(() => {
                     if (!viewImageWrapper.classList.contains('is-visible')) {
                         viewImage.innerHTML = '';
+
+                        videoControls.style.display = 'none';
+                        const progressBar = document.querySelector('.video-controls__progress-bar');
+                        if (progressBar) progressBar.style.width = '0%';
                     }
                 }, 600);
             });
@@ -1351,6 +1513,24 @@
 
             window.addEventListener('resize', resizeCanvas);
             infoBtn.addEventListener('click', resizeCanvas);
+
+            const indexBtn = document.querySelector('#index-btn');
+            const indexWrap = document.querySelector('.index-wrapper');
+
+            if (indexBtn && indexWrap) {
+                indexBtn.addEventListener('click', () => {
+                    indexWrap.classList.add('is-visible');
+                    gridOverlay.classList.add('is-visible');
+                    document.querySelectorAll('#world video').forEach(v => v.pause());
+                });
+
+                indexWrap.addEventListener('click', () => {
+                    indexWrap.classList.remove('is-visible');
+                    gridOverlay.classList.remove('is-visible');
+                    document.querySelectorAll('#world video').forEach(v => v.play());
+                });
+            }
+
         </script>
     </body>
 </html>
