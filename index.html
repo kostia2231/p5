@@ -718,7 +718,6 @@
             <div class="viewer-nav viewer-next"></div>
 
             <div class="grid-overlay"></div>
-
         </div>
 
         <script>
@@ -791,6 +790,23 @@
 
             const CLOUD_NAME = "dfzw4p8ez";
             const TAG_NAME = "portfolio";
+            const indexPreloadUrls = [];
+            const indexThumbHiUrls = [];
+            const projectFilesMap = new Map();
+            const preloadedProjects = new Set();
+
+            function preloadProjectLowRes(projectTag) {
+                if (preloadedProjects.has(projectTag)) return;
+                const files = projectFilesMap.get(projectTag);
+                if (!files) return;
+                preloadedProjects.add(projectTag);
+                files.forEach(file => {
+                    if (file.type === 'image') {
+                        const p = new Image();
+                        p.src = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_100,q_10,f_auto/${file.public_id}.${file.format}`;
+                    }
+                });
+            }
 
             const gridOverlay = document.querySelector('.grid-overlay');
             const closeBtn = document.querySelector('.view-image__text__close');
@@ -871,6 +887,9 @@
                     viewImageLocal.innerHTML = `<video id="viewer-main-vid" src="${initialUrl}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit: contain;"></video>`;
                 } else {
                     controls.style.display = 'none';
+                    const pre = new Image();
+                    pre.src = initialUrl;
+                    try { await pre.decode(); } catch (_) {}
                     viewImageLocal.innerHTML = `<img id="viewer-main-img" src="${initialUrl}" style="width:100%; height:100%; object-fit:contain;">`;
                 }
 
@@ -972,7 +991,7 @@
                         wrapper.innerHTML = content;
                         leftCol.appendChild(wrapper);
                     } else {
-                        mediaUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${item.public_id}.${item.format}`;
+                        mediaUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto/${item.public_id}.${item.format}`;
                         content = `<img src="${mediaUrl}" draggable="false">`;
                         wrapper.innerHTML = content;
                         rightCol.appendChild(wrapper);
@@ -985,6 +1004,7 @@
                             if (isViewerOpen) return;
                             topDescEl.textContent = projectTag;
                             topDescEl.classList.add('is-visible');
+                            preloadProjectLowRes(projectTag);
                         });
 
                         wrapper.addEventListener('mouseleave', () => {
@@ -992,7 +1012,12 @@
                         });
 
                         wrapper.addEventListener('click', () => {
-                            openProject(projectTag, item.type, mediaUrl);
+                            const files = projectFilesMap.get(projectTag);
+                            const target = (files && files[0]) || item;
+                            const initUrl = target.type === 'video'
+                                ? `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/${target.public_id}.${target.format}`
+                                : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_100,q_10,f_auto/${target.public_id}.${target.format}`;
+                            openProject(projectTag, target.type, initUrl);
                         });
                     } else {
                         wrapper.style.cursor = 'default';
@@ -1026,6 +1051,8 @@
                     li.style.transitionDelay = (rowIdx * 0.05) + 's';
                     rowIdx++;
 
+                    let firstFile = null;
+
                     // Шаблон строки: пустой контейнер для миниатюр + текст
                     li.innerHTML = `
                         <div class="index-text">${projectTag}</div>
@@ -1038,11 +1065,12 @@
                         document.querySelector('.index-wrapper').classList.remove('is-visible');
                         document.querySelector('#index-btn').classList.remove('is-active');
 
-                        const mediaUrl = coverItem.type === 'video'
-                            ? `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/${coverItem.public_id}.${coverItem.format}`
-                            : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${coverItem.public_id}.${coverItem.format}`;
+                        const item = firstFile || coverItem;
+                        const mediaUrl = item.type === 'video'
+                            ? `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/${item.public_id}.${item.format}`
+                            : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_100,q_10,f_auto/${item.public_id}.${item.format}`;
 
-                        openProject(projectTag, coverItem.type, mediaUrl);
+                        openProject(projectTag, item.type, mediaUrl);
                     });
 
                     indexList.appendChild(li);
@@ -1060,6 +1088,8 @@
                             ...iRes.resources.map(item => ({ ...item, type: 'image' }))
                         ];
                         projectFiles.sort((a, b) => a.public_id.localeCompare(b.public_id));
+                        firstFile = projectFiles[0] || null;
+                        projectFilesMap.set(projectTag, projectFiles);
 
                         const thumbContainer = li.querySelector('.index-thumbnails');
 
@@ -1067,8 +1097,8 @@
                             let thumbnailsHTML = '';
                             projectFiles.forEach(file => {
                                 const lowUrl = file.type === 'video'
-                                    ? `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/w_100,q_20/${file.public_id}.jpg`
-                                    : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_100,q_20/${file.public_id}.${file.format}`;
+                                    ? `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/w_100,q_10/${file.public_id}.jpg`
+                                    : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_100,q_10,f_auto/${file.public_id}.${file.format}`;
                                 const hiUrl = file.type === 'video'
                                     ? `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/h_220,q_auto,f_auto/${file.public_id}.jpg`
                                     : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/h_220,q_auto,f_auto/${file.public_id}.${file.format}`;
@@ -1076,12 +1106,27 @@
                             });
                             thumbContainer.innerHTML = thumbnailsHTML;
 
-                            li.addEventListener('mouseenter', () => {
-                                thumbContainer.querySelectorAll('img[data-hi-res]').forEach(img => {
-                                    img.src = img.dataset.hiRes;
-                                    img.removeAttribute('data-hi-res');
+                            const hiImgs = thumbContainer.querySelectorAll('img[data-hi-res]');
+
+                            const upgradeRow = () => {
+                                hiImgs.forEach(img => {
+                                    if (img.dataset.hiRes) {
+                                        img.src = img.dataset.hiRes;
+                                        img.removeAttribute('data-hi-res');
+                                    }
                                 });
-                            }, { once: true });
+                            };
+                            li.addEventListener('mouseenter', upgradeRow, { once: true });
+                            li._upgradeRow = upgradeRow;
+
+                            projectFiles.forEach(file => {
+                                if (file.type === 'image') {
+                                    indexPreloadUrls.push(`https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_100,q_10,f_auto/${file.public_id}.${file.format}`);
+                                }
+                                indexThumbHiUrls.push(file.type === 'video'
+                                    ? `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/h_220,q_auto,f_auto/${file.public_id}.jpg`
+                                    : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/h_220,q_auto,f_auto/${file.public_id}.${file.format}`);
+                            });
                         }
                     }).catch(err => console.error("Ошибка загрузки миниатюр: ", err));
                 });
@@ -1543,6 +1588,13 @@
             const indexWrap = document.querySelector('.index-wrapper');
 
             if (indexBtn && indexWrap) {
+                indexBtn.addEventListener('mouseenter', () => {
+                    indexPreloadUrls.forEach(url => {
+                        const preload = new Image();
+                        preload.src = url;
+                    });
+                }, { once: true });
+
                 indexBtn.addEventListener('click', () => {
                     const isOpen = indexWrap.classList.contains('is-visible');
                     if (isOpen) {
