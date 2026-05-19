@@ -323,10 +323,14 @@
                 cursor: pointer;
                 transition: color 0.3s cubic-bezier(.77,0,.175,1), padding 0.3s linear;
             }
-            .btn-custom__background:hover {
+            .btn-custom__background:hover,
+            .btn-custom__background.is-active {
                 padding-left: 15px;
                 padding-right: 15px;
                 background-color: #F61D3D;
+            }
+            #index-btn.is-active {
+                cursor: zoom-out;
             }
             .btn-custom__inner {
                 color: rgba(32, 32, 32, 1);
@@ -1022,6 +1026,7 @@
                         e.stopPropagation();
 
                         document.querySelector('.index-wrapper').classList.remove('is-visible');
+                        document.querySelector('#index-btn').classList.remove('is-active');
 
                         const mediaUrl = coverItem.type === 'video'
                             ? `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/${coverItem.public_id}.${coverItem.format}`
@@ -1051,12 +1056,22 @@
                         if (projectFiles.length > 0) {
                             let thumbnailsHTML = '';
                             projectFiles.forEach(file => {
-                                let thumbUrl = file.type === 'video'
+                                const lowUrl = file.type === 'video'
                                     ? `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/w_100,q_20/${file.public_id}.jpg`
                                     : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_100,q_20/${file.public_id}.${file.format}`;
-                                thumbnailsHTML += `<img src="${thumbUrl}" alt="" loading="lazy">`;
+                                const hiUrl = file.type === 'video'
+                                    ? `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/h_220,q_auto,f_auto/${file.public_id}.jpg`
+                                    : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/h_220,q_auto,f_auto/${file.public_id}.${file.format}`;
+                                thumbnailsHTML += `<img src="${lowUrl}" data-hi-res="${hiUrl}" alt="" loading="lazy">`;
                             });
                             thumbContainer.innerHTML = thumbnailsHTML;
+
+                            li.addEventListener('mouseenter', () => {
+                                thumbContainer.querySelectorAll('img[data-hi-res]').forEach(img => {
+                                    img.src = img.dataset.hiRes;
+                                    img.removeAttribute('data-hi-res');
+                                });
+                            }, { once: true });
                         }
                     }).catch(err => console.error("Ошибка загрузки миниатюр: ", err));
                 });
@@ -1519,13 +1534,23 @@
 
             if (indexBtn && indexWrap) {
                 indexBtn.addEventListener('click', () => {
-                    indexWrap.classList.add('is-visible');
-                    gridOverlay.classList.add('is-visible');
-                    document.querySelectorAll('#world video').forEach(v => v.pause());
+                    const isOpen = indexWrap.classList.contains('is-visible');
+                    if (isOpen) {
+                        indexWrap.classList.remove('is-visible');
+                        indexBtn.classList.remove('is-active');
+                        gridOverlay.classList.remove('is-visible');
+                        document.querySelectorAll('#world video').forEach(v => v.play());
+                    } else {
+                        indexWrap.classList.add('is-visible');
+                        indexBtn.classList.add('is-active');
+                        gridOverlay.classList.add('is-visible');
+                        document.querySelectorAll('#world video').forEach(v => v.pause());
+                    }
                 });
 
                 indexWrap.addEventListener('click', () => {
                     indexWrap.classList.remove('is-visible');
+                    indexBtn.classList.remove('is-active');
                     gridOverlay.classList.remove('is-visible');
                     document.querySelectorAll('#world video').forEach(v => v.play());
                 });
