@@ -872,7 +872,7 @@
                 }
             }
 
-            async function openProject(projectTag, initialType, initialUrl) {
+            async function openProject(projectTag, initialType, initialUrl, posterUrl) {
                 isViewerOpen = true;
 
                 const viewImageWrapperLocal = document.querySelector('.view-image-wrapper');
@@ -884,7 +884,8 @@
 
                 if (initialType === 'video') {
                     controls.style.display = 'flex';
-                    viewImageLocal.innerHTML = `<video id="viewer-main-vid" src="${initialUrl}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit: contain;"></video>`;
+                    const posterAttr = posterUrl ? ` poster="${posterUrl}"` : '';
+                    viewImageLocal.innerHTML = `<video id="viewer-main-vid" src="${initialUrl}"${posterAttr} autoplay loop muted playsinline style="width:100%; height:100%; object-fit: contain;"></video>`;
                 } else {
                     controls.style.display = 'none';
                     const pre = new Image();
@@ -1017,7 +1018,10 @@
                             const initUrl = target.type === 'video'
                                 ? `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/${target.public_id}.${target.format}`
                                 : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_100,q_10,f_auto/${target.public_id}.${target.format}`;
-                            openProject(projectTag, target.type, initUrl);
+                            const posterUrl = target.type === 'video'
+                                ? `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/w_100,q_10/${target.public_id}.jpg`
+                                : null;
+                            openProject(projectTag, target.type, initUrl, posterUrl);
                         });
                     } else {
                         wrapper.style.cursor = 'default';
@@ -1069,8 +1073,11 @@
                         const mediaUrl = item.type === 'video'
                             ? `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/${item.public_id}.${item.format}`
                             : `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_100,q_10,f_auto/${item.public_id}.${item.format}`;
+                        const posterUrl = item.type === 'video'
+                            ? `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/w_100,q_10/${item.public_id}.jpg`
+                            : null;
 
-                        openProject(projectTag, item.type, mediaUrl);
+                        openProject(projectTag, item.type, mediaUrl, posterUrl);
                     });
 
                     indexList.appendChild(li);
@@ -1236,15 +1243,17 @@
                     }
 
                     const url = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/q_auto,f_auto/${file.public_id}.${file.format}`;
+                    const posterUrl = `https://res.cloudinary.com/${CLOUD_NAME}/video/upload/w_100,q_10/${file.public_id}.jpg`;
                     let vidEl = document.getElementById('viewer-main-vid');
                     let imgEl = document.getElementById('viewer-main-img');
 
                     if (imgEl) imgEl.remove();
 
                     if (!vidEl) {
-                        viewImageLocal.innerHTML = `<video id="viewer-main-vid" src="${url}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:contain;"></video>`;
+                        viewImageLocal.innerHTML = `<video id="viewer-main-vid" src="${url}" poster="${posterUrl}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:contain;"></video>`;
                     } else {
                         if (!vidEl.src.includes(file.public_id)) {
+                            vidEl.poster = posterUrl;
                             vidEl.src = url;
                             vidEl.play();
                         }
