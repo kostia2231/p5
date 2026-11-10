@@ -54,7 +54,7 @@ function draw() {
   history.push({ x, y, col });
   if (history.length > trailGap * 2 + 1) history.shift();
 
-  const alphas = [120, 190];
+  const alphas = [25, 55];
   for (let i = 0; i < 2; i++) {
     const idx = history.length - 1 - trailGap * (2 - i);
     if (idx < 0) continue;
