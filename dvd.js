@@ -1,6 +1,6 @@
 let x, y;
-let vx = 3.5;
-let vy = 3.5;
+let vx = 2;
+let vy = 2;
 let logo;
 let w, h;
 let col;
