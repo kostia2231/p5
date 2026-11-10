@@ -4,6 +4,7 @@ let vy = 3.5;
 let logo;
 let w, h;
 let col;
+let displayCol;
 const history = [];
 const trailGap = 4;
 
@@ -19,6 +20,7 @@ function setup() {
   x = random(width - w);
   y = random(height - h);
   col = randomColor();
+  displayCol = color(col);
 }
 
 function setLogoSize() {
@@ -51,7 +53,9 @@ function draw() {
     col = randomColor();
   }
 
-  history.push({ x, y, col });
+  displayCol = lerpColor(displayCol, color(col), 0.15);
+
+  history.push({ x, y, col: color(displayCol) });
   if (history.length > trailGap * 2 + 1) history.shift();
 
   const alphas = [25, 55];
@@ -65,7 +69,7 @@ function draw() {
     image(logo, p.x, p.y, w, h);
   }
 
-  tint(col);
+  tint(displayCol);
   image(logo, x, y, w, h);
 }
 
