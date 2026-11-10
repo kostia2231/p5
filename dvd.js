@@ -26,7 +26,7 @@ function setup() {
 }
 
 function setLogoSize() {
-  w = width * 0.6;
+  w = width * 0.68;
   h = w * (30 / 470);
 }
 
