@@ -6,8 +6,8 @@ let w, h;
 let col;
 let displayCol;
 const history = [];
-const trailGap = 4;
-const trailLife = 30;
+const trailGap = 6;
+const trailLife = 50;
 let bounceTimer = trailLife;
 
 function preload() {
