@@ -7,6 +7,8 @@ let col;
 let displayCol;
 const history = [];
 const trailGap = 4;
+const trailLife = 30;
+let bounceTimer = trailLife;
 
 function preload() {
   logo = loadImage("logo-dvd.svg");
@@ -46,20 +48,24 @@ function draw() {
     vx *= -1;
     x = constrain(x, 0, width - w);
     col = randomColor();
+    bounceTimer = 0;
   }
   if (y <= 0 || y >= height - h) {
     vy *= -1;
     y = constrain(y, 0, height - h);
     col = randomColor();
+    bounceTimer = 0;
   }
+  bounceTimer++;
 
   displayCol = lerpColor(displayCol, color(col), 0.15);
 
   history.push({ x, y, col: color(displayCol) });
   if (history.length > trailGap * 2 + 1) history.shift();
 
-  const alphas = [25, 55];
-  for (let i = 0; i < 2; i++) {
+  const fade = constrain(1 - bounceTimer / trailLife, 0, 1);
+  const alphas = [25 * fade, 55 * fade];
+  for (let i = 0; i < 2 && fade > 0; i++) {
     const idx = history.length - 1 - trailGap * (2 - i);
     if (idx < 0) continue;
     const p = history[idx];
