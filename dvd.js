@@ -19,9 +19,9 @@ function setup() {
   const cnv = createCanvas(s, s);
   cnv.parent("canvas-holder");
   setLogoSize();
-  x = random(width - w);
-  y = random(height - h);
-  col = randomColor();
+  x = (width - w) / 2;
+  y = (height - h) / 2;
+  col = "#ff0000";
   displayCol = color(col);
 }
 
