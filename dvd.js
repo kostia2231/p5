@@ -54,5 +54,10 @@ function draw() {
 }
 
 function randomColor() {
-  return color(random(100, 255), random(100, 255), random(100, 255));
+  const colors = ["#ff0000", "#0000ff", "#00cc00", "#9900ff"];
+  let next;
+  do {
+    next = random(colors);
+  } while (col && next === col);
+  return next;
 }
