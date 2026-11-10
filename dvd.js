@@ -4,6 +4,8 @@ let vy = 3.5;
 let logo;
 let w, h;
 let col;
+const history = [];
+const trailGap = 8;
 
 function preload() {
   logo = loadImage("logo-dvd.svg");
@@ -47,6 +49,20 @@ function draw() {
     vy *= -1;
     y = constrain(y, 0, height - h);
     col = randomColor();
+  }
+
+  history.push({ x, y, col });
+  if (history.length > trailGap * 3 + 1) history.shift();
+
+  const alphas = [60, 120, 180];
+  for (let i = 0; i < 3; i++) {
+    const idx = history.length - 1 - trailGap * (3 - i);
+    if (idx < 0) continue;
+    const p = history[idx];
+    const c = color(p.col);
+    c.setAlpha(alphas[i]);
+    tint(c);
+    image(logo, p.x, p.y, w, h);
   }
 
   tint(col);
