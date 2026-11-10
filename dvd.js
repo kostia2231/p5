@@ -1,23 +1,35 @@
 let x, y;
 let vx = 3.5;
 let vy = 3.5;
-const size = 80;
+let logo;
+let w, h;
 let col;
+
+function preload() {
+  logo = loadImage("logo-dvd.svg");
+}
 
 function setup() {
   const s = min(windowWidth, windowHeight);
   const cnv = createCanvas(s, s);
   cnv.parent("canvas-holder");
-  x = random(width - size);
-  y = random(height - size);
+  setLogoSize();
+  x = random(width - w);
+  y = random(height - h);
   col = randomColor();
+}
+
+function setLogoSize() {
+  w = width * 0.35;
+  h = w * (30 / 470);
 }
 
 function windowResized() {
   const s = min(windowWidth, windowHeight);
   resizeCanvas(s, s);
-  x = constrain(x, 0, width - size);
-  y = constrain(y, 0, height - size);
+  setLogoSize();
+  x = constrain(x, 0, width - w);
+  y = constrain(y, 0, height - h);
 }
 
 function draw() {
@@ -26,20 +38,19 @@ function draw() {
   x += vx;
   y += vy;
 
-  if (x <= 0 || x >= width - size) {
+  if (x <= 0 || x >= width - w) {
     vx *= -1;
-    x = constrain(x, 0, width - size);
+    x = constrain(x, 0, width - w);
     col = randomColor();
   }
-  if (y <= 0 || y >= height - size) {
+  if (y <= 0 || y >= height - h) {
     vy *= -1;
-    y = constrain(y, 0, height - size);
+    y = constrain(y, 0, height - h);
     col = randomColor();
   }
 
-  noStroke();
-  fill(col);
-  rect(x, y, size, size);
+  tint(col);
+  image(logo, x, y, w, h);
 }
 
 function randomColor() {
