@@ -69,7 +69,7 @@ function draw() {
     const idx = history.length - 1 - trailGap * (2 - i);
     if (idx < 0) continue;
     const p = history[idx];
-    const c = color(p.col);
+    const c = color(col);
     c.setAlpha(alphas[i]);
     tint(c);
     image(logo, p.x, p.y, w, h);
