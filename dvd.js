@@ -5,7 +5,7 @@ let logo;
 let w, h;
 let col;
 const history = [];
-const trailGap = 8;
+const trailGap = 4;
 
 function preload() {
   logo = loadImage("logo-dvd.svg");
@@ -52,11 +52,11 @@ function draw() {
   }
 
   history.push({ x, y, col });
-  if (history.length > trailGap * 3 + 1) history.shift();
+  if (history.length > trailGap * 2 + 1) history.shift();
 
-  const alphas = [60, 120, 180];
-  for (let i = 0; i < 3; i++) {
-    const idx = history.length - 1 - trailGap * (3 - i);
+  const alphas = [120, 190];
+  for (let i = 0; i < 2; i++) {
+    const idx = history.length - 1 - trailGap * (2 - i);
     if (idx < 0) continue;
     const p = history[idx];
     const c = color(p.col);
